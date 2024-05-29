@@ -25,7 +25,20 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+                'regex:/[a-z]/', // al menos una minuscula
+                'regex:/[A-Z]/', // al menos una mayuscula
+                'regex:/[0-9]/', // al menos un numero
+                'regex:/[@$!%*?&]/', // al menos un caracter especial
+            ],
+        ], [
+            'password.min' => 'La contraseña debe contener al menos 8 caracteres',
+            'password.regex' => 'La contraseña debe contener al menos un número, una mayúscula, una minúscula o un caracter especial',
+            'password.confirmed' => 'La contraseña no es igual a la ingresada.',
         ]);
 
         User::create([
@@ -47,7 +60,20 @@ class UserController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-            'password' => 'nullable|string|min:8|confirmed',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+                'regex:/[a-z]/', // al menos una minuscula
+                'regex:/[A-Z]/', // al menos una mayuscula
+                'regex:/[0-9]/', // al menos un numero
+                'regex:/[@$!%*?&]/', // al menos un caracter especial
+            ],
+        ], [
+            'password.min' => 'La contraseña debe contener al menos 8 caracteres',
+            'password.regex' => 'La contraseña debe contener al menos un número, una mayúscula, una minúscula o un caracter especial',
+            'password.confirmed' => 'La contraseña no es igual a la ingresada.',
         ]);
 
         $user->update([
