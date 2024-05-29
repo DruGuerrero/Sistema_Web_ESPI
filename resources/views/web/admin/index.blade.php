@@ -7,11 +7,12 @@
 @stop
 
 @section('content')
-    <p>Welcome to this beautiful admin panel.</p>
+    <p>Welcome to the admin panel.</p>
+    <a href="{{ route('admin.users.index') }}" class="btn btn-primary">Manage Users</a>
 @stop
 
 @section('css')
-<link rel="stylesheet" href="/css/admin_custom.css">
+    <link rel="stylesheet" href="/css/admin_custom.css">
 @stop
 
 @section('js')
