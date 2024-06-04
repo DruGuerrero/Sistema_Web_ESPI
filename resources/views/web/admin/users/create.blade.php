@@ -36,6 +36,16 @@
             <label for="password_confirmation">Confirm Password</label>
             <input type="password" name="password_confirmation" class="form-control" required>
         </div>
+        <div class="form-group">
+            <label for="role">Role</label>
+            <select name="role" class="form-control" required>
+                <option value="Administrativo">Administrativo</option>
+                <option value="Jefe de carrera">Jefe de carrera</option>
+                <option value="Docente">Docente</option>
+                <option value="Estudiante">Estudiante</option>
+                <option value="Superusuario">Superusuario</option>
+            </select>
+        </div>
         <button type="submit" class="btn btn-success">Create</button>
     </form>
 @stop

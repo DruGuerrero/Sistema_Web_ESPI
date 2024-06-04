@@ -32,11 +32,21 @@
         <div class="form-group">
             <label for="password">Password</label>
             <input type="password" name="password" class="form-control">
-            <small class="form-text text-muted">Leave blank to keep current password.</small>
+            <small class="form-text text-muted">Para continual con la contraseña actual, dejar este espacio en blanco.</small>
         </div>
         <div class="form-group">
             <label for="password_confirmation">Confirm Password</label>
             <input type="password" name="password_confirmation" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="role">Role</label>
+            <select name="role" class="form-control" required>
+                <option value="Administrativo" {{ $user->role == 'Administrativo' ? 'selected' : '' }}>Administrativo</option>
+                <option value="Jefe de carrera" {{ $user->role == 'Jefe de carrera' ? 'selected' : '' }}>Jefe de carrera</option>
+                <option value="Docente" {{ $user->role == 'Docente' ? 'selected' : '' }}>Docente</option>
+                <option value="Estudiante" {{ $user->role == 'Estudiante' ? 'selected' : '' }}>Estudiante</option>
+                <option value="Superusuario" {{ $user->role == 'Superusuario' ? 'selected' : '' }}>Superusuario</option>
+            </select>
         </div>
         <button type="submit" class="btn btn-success">Update</button>
     </form>

@@ -35,6 +35,7 @@ class UserController extends Controller
                 'regex:/[0-9]/', // al menos un numero
                 'regex:/[@$!%*?&]/', // al menos un caracter especial
             ],
+            'role' => 'required|string|in:Administrativo,Jefe de carrera,Docente,Estudiante,Superusuario',
         ], [
             'password.min' => 'La contraseña debe contener al menos 8 caracteres',
             'password.regex' => 'La contraseña debe contener al menos un número, una mayúscula, una minúscula o un caracter especial',
@@ -45,9 +46,10 @@ class UserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $request->role,
         ]);
 
-        return redirect()->route('admin.users.index')->with('success', 'User created successfully.');
+        return redirect()->route('admin.users.index')->with('success', 'Usuario creado exitosamente.');
     }
 
     public function edit(User $user)
@@ -70,6 +72,7 @@ class UserController extends Controller
                 'regex:/[0-9]/', // al menos un numero
                 'regex:/[@$!%*?&]/', // al menos un caracter especial
             ],
+            'role' => 'required|string|in:Administrativo,Jefe de carrera,Docente,Estudiante,Superusuario',
         ], [
             'password.min' => 'La contraseña debe contener al menos 8 caracteres',
             'password.regex' => 'La contraseña debe contener al menos un número, una mayúscula, una minúscula o un caracter especial',
@@ -80,14 +83,15 @@ class UserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => $request->password ? Hash::make($request->password) : $user->password,
+            'role' => $request->role,
         ]);
 
-        return redirect()->route('admin.users.index')->with('success', 'User updated successfully.');
+        return redirect()->route('admin.users.index')->with('success', 'Usuario actualizado exitosamente.');
     }
 
     public function destroy(User $user)
     {
         $user->delete();
-        return redirect()->route('admin.users.index')->with('success', 'User deleted successfully.');
+        return redirect()->route('admin.users.index')->with('success', 'Usuario eliminado exitosamente.');
     }
 }
