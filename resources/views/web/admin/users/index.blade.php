@@ -11,6 +11,14 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    <!-- Formulario de búsqueda -->
+    <form action="{{ route('admin.users.index') }}" method="GET" class="form-inline mb-3">
+        <div class="form-group">
+            <input type="text" name="search" class="form-control" placeholder="Search users" value="{{ request()->input('search') }}">
+        </div>
+        <button type="submit" class="btn btn-primary ml-2">Search</button>
+    </form>
+
     <a href="{{ route('admin.users.create') }}" class="btn btn-primary mb-3">Create User</a>
 
     <table class="table table-bordered">

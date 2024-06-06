@@ -9,9 +9,26 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    /*
     public function index()
     {
         $users = User::all();
+        return view('web.admin.users.index', compact('users'));
+    }
+    */
+    public function index(Request $request)
+    {
+        $query = User::query();
+
+        if ($request->has('search')) {
+            $search = $request->input('search');
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('role', 'like', "%{$search}%");
+        }
+
+        $users = $query->get();
+
         return view('web.admin.users.index', compact('users'));
     }
 
@@ -63,7 +80,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
             'password' => [
-                'required',
+                'nullable',
                 'string',
                 'min:8',
                 'confirmed',
@@ -79,13 +96,26 @@ class UserController extends Controller
             'password.confirmed' => 'La contraseña no es igual a la ingresada.',
         ]);
 
+        $data = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'role' => $request->role,
+        ];
+
+        if ($request->password) {
+            $data['password'] = Hash::make($request->password);
+        }
+
+        $user->update($data);
+        
+        /*
         $user->update([
             'name' => $request->name,
             'email' => $request->email,
             'password' => $request->password ? Hash::make($request->password) : $user->password,
             'role' => $request->role,
         ]);
-
+*/
         return redirect()->route('admin.users.index')->with('success', 'Usuario actualizado exitosamente.');
     }
 

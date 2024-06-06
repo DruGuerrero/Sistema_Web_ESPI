@@ -23,11 +23,11 @@
         @method('PUT')
         <div class="form-group">
             <label for="name">Name</label>
-            <input type="text" name="name" class="form-control" value="{{ $user->name }}" required>
+            <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}" required>
         </div>
         <div class="form-group">
             <label for="email">Email</label>
-            <input type="email" name="email" class="form-control" value="{{ $user->email }}" required>
+            <input type="email" name="email" class="form-control" value="{{ old('email', $user->email) }}" required>
         </div>
         <div class="form-group">
             <label for="password">Password</label>
@@ -41,11 +41,11 @@
         <div class="form-group">
             <label for="role">Role</label>
             <select name="role" class="form-control" required>
-                <option value="Administrativo" {{ $user->role == 'Administrativo' ? 'selected' : '' }}>Administrativo</option>
-                <option value="Jefe de carrera" {{ $user->role == 'Jefe de carrera' ? 'selected' : '' }}>Jefe de carrera</option>
-                <option value="Docente" {{ $user->role == 'Docente' ? 'selected' : '' }}>Docente</option>
-                <option value="Estudiante" {{ $user->role == 'Estudiante' ? 'selected' : '' }}>Estudiante</option>
-                <option value="Superusuario" {{ $user->role == 'Superusuario' ? 'selected' : '' }}>Superusuario</option>
+                <option value="Administrativo" {{ old('role', $user->role) == 'Administrativo' ? 'selected' : '' }}>Administrativo</option>
+                <option value="Jefe de carrera" {{ old('role', $user->role) == 'Jefe de carrera' ? 'selected' : '' }}>Jefe de carrera</option>
+                <option value="Docente" {{ old('role', $user->role) == 'Docente' ? 'selected' : '' }}>Docente</option>
+                <option value="Estudiante" {{ old('role', $user->role) == 'Estudiante' ? 'selected' : '' }}>Estudiante</option>
+                <option value="Superusuario" {{ old('role', $user->role) == 'Superusuario' ? 'selected' : '' }}>Superusuario</option>
             </select>
         </div>
         <button type="submit" class="btn btn-success">Update</button>
