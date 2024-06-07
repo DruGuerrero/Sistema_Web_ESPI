@@ -3,7 +3,7 @@
 @section('title', 'Create User')
 
 @section('content_header')
-    <h1>Create User</h1>
+    <h1>Crear usuario</h1>
 @stop
 
 @section('content')
@@ -21,7 +21,7 @@
     <form action="{{ route('admin.users.store') }}" method="POST">
         @csrf
         <div class="form-group">
-            <label for="name">Name</label>
+            <label for="name">Nombre</label>
             <input type="text" name="name" class="form-control" required value="{{ old('name') }}">
         </div>
         <div class="form-group">
@@ -29,15 +29,15 @@
             <input type="email" name="email" class="form-control" required value="{{ old('email') }}">
         </div>
         <div class="form-group">
-            <label for="password">Password</label>
+            <label for="password">Contraseña</label>
             <input type="password" name="password" class="form-control" required>
         </div>
         <div class="form-group">
-            <label for="password_confirmation">Confirm Password</label>
+            <label for="password_confirmation">Confirmar contraseña</label>
             <input type="password" name="password_confirmation" class="form-control" required>
         </div>
         <div class="form-group">
-            <label for="role">Role</label>
+            <label for="role">Rol</label>
             <select name="role" class="form-control" required>
                 <option value="Administrativo" {{ old('role') == 'Administrativo' ? 'selected' : '' }}>Administrativo</option>
                 <option value="Jefe de carrera" {{ old('role') == 'Jefe de carrera' ? 'selected' : '' }}>Jefe de carrera</option>
@@ -46,6 +46,7 @@
                 <option value="Superusuario" {{ old('role') == 'Superusuario' ? 'selected' : '' }}>Superusuario</option>
             </select>
         </div>
-        <button type="submit" class="btn btn-success">Create</button>
+        <button type="submit" class="btn btn-success">Crear</button>
+        <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Cancelar</a>
     </form>
 @stop

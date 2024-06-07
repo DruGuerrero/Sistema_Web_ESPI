@@ -3,7 +3,7 @@
 @section('title', 'Users')
 
 @section('content_header')
-    <h1>Users</h1>
+    <h1>Usuarios</h1>
 @stop
 
 @section('content')
@@ -14,21 +14,21 @@
     <!-- Formulario de búsqueda -->
     <form action="{{ route('admin.users.index') }}" method="GET" class="form-inline mb-3">
         <div class="form-group">
-            <input type="text" name="search" class="form-control" placeholder="Search users" value="{{ request()->input('search') }}">
+            <input type="text" name="search" class="form-control" placeholder="Buscar usuario" value="{{ request()->input('search') }}">
         </div>
-        <button type="submit" class="btn btn-primary ml-2">Search</button>
+        <button type="submit" class="btn btn-primary ml-2">Buscar</button>
     </form>
 
-    <a href="{{ route('admin.users.create') }}" class="btn btn-primary mb-3">Create User</a>
+    <a href="{{ route('admin.users.create') }}" class="btn btn-primary mb-3">Crear usuario</a>
 
     <table class="table table-bordered">
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Name</th>
+                <th>Nombre</th>
                 <th>Email</th>
-                <th>Role</th>
-                <th>Actions</th>
+                <th>Rol</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -39,11 +39,11 @@
                     <td>{{ $user->email }}</td>
                     <td>{{ $user->role }}</td>
                     <td>
-                        <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                        <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-warning btn-sm">Editar</a>
                         <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" style="display:inline;">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
                         </form>
                     </td>
                 </tr>

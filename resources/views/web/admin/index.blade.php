@@ -3,12 +3,11 @@
 @section('title', 'Dashboard')
 
 @section('content_header')
-    <h1>Dashboard</h1>
+    <h1>Inicio</h1>
 @stop
 
 @section('content')
-    <p>Welcome to the admin panel.</p>
-    <a href="{{ route('admin.users.index') }}" class="btn btn-primary">Manage Users</a>
+    <p>Bienvenido al panel administrativo del Instituto ESPI Bolivia.</p>
 @stop
 
 @section('css')

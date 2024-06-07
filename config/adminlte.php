@@ -113,11 +113,11 @@ return [
         'enabled' => true,
         'mode' => 'fullscreen',
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
+            'path' => 'vendor/adminlte/dist/img/espi_bolivia_logo.png',
             'alt' => 'AdminLTE Preloader Image',
             'effect' => 'animation__shake',
-            'width' => 60,
-            'height' => 60,
+            'width' => 100,
+            'height' => 100,
         ],
     ],
 
@@ -257,7 +257,7 @@ return [
     */
 
     'use_route_url' => false,
-    'dashboard_url' => 'admin/Panel-Administrativo', //Icono de AdminLTE que va al inicio
+    'dashboard_url' => 'admin/Panel-Administrativo', //Icono de ESPI Bolivia que va al inicio
     'logout_url' => 'logout',
     'login_url' => 'login',
     'register_url' => 'register',
@@ -295,11 +295,13 @@ return [
 
     'menu' => [
         // Navbar items:
+        /*
         [
             'type' => 'navbar-search',
             'text' => 'search',
             'topnav_right' => true,
         ],
+        */
         [
             'type' => 'fullscreen-widget',
             'topnav_right' => true,
@@ -319,10 +321,10 @@ return [
             'text' => 'pages',
             'url' => 'admin/pages',
             'icon' => 'far fa-fw fa-file',
-            'label' => 4,
+            //'label' => 4,
             'label_color' => 'success',
         ],
-        ['header' => 'account_settings'],
+        ['header' => 'GESTIÓN DE USUARIOS'],
         [
             'text' => 'Usuarios',
             'url' => 'admin/users',
