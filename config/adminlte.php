@@ -324,11 +324,14 @@ return [
             //'label' => 4,
             'label_color' => 'success',
         ],
-        ['header' => 'GESTIÓN DE USUARIOS'],
+        [   'header' => 'GESTIÓN DE USUARIOS',
+            'can' => 'manage-users',
+        ],
         [
             'text' => 'Usuarios',
             'url' => 'admin/users',
             'icon' => 'fas fa-fw fa-user',
+            'can' => 'manage-users',
         ],
     ],
 

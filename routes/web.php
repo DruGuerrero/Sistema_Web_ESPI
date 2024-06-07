@@ -19,5 +19,7 @@ Route::get('/', function () {
 });
 Route::group(['prefix'=> 'admin', 'middleware' => ['auth:sanctum', 'verified']], function(){
 Route::get('Panel-Administrativo', [indexController::class, 'index'])->name('dashboard');
-Route::resource('users', UserController::class)->names('admin.users');
+    Route::group(['middleware' => 'superuser'], function() {
+        Route::resource('users', UserController::class)->names('admin.users');
+    });
 });
