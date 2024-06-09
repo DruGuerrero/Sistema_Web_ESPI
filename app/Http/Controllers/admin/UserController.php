@@ -18,7 +18,8 @@ class UserController extends Controller
     */
     public function index(Request $request)
     {
-        $query = User::query();
+        //$query = User::query();
+        $query = User::enabled();
 
         if ($request->has('search')) {
             $search = $request->input('search');
@@ -121,7 +122,7 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        $user->delete();
-        return redirect()->route('admin.users.index')->with('success', 'Usuario eliminado exitosamente.');
+        $user->update(['disabled' => 1]);
+        return redirect()->route('admin.users.index')->with('success', 'Usuario eliminado correctamente.');
     }
 }

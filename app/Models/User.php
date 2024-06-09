@@ -28,6 +28,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'disabled',
     ];
 
     /**
@@ -49,7 +50,13 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'disabled' => 'boolean',
     ];
+
+    public function scopeEnabled($query)
+    {
+        return $query->where('disabled', 0);
+    }
 
     /**
      * The accessors to append to the model's array form.
