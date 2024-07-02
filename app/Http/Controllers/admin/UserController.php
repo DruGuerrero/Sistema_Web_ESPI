@@ -16,6 +16,11 @@ class UserController extends Controller
         return view('web.admin.users.index', compact('users'));
     }
     */
+    public function __construct()
+    {
+        $this->middleware('superuser');
+    }
+    
     public function index(Request $request)
     {
         //$query = User::query();
