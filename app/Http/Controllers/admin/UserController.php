@@ -23,14 +23,24 @@ class UserController extends Controller
 
         if ($request->has('search')) {
             $search = $request->input('search');
-            $query->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('role', 'like', "%{$search}%");
+            $query->where(function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%")
+                      ->orWhere('role', 'like', "%{$search}%");
+            });
         }
-
+    
+        if ($request->has('role')) {
+            $role = $request->input('role');
+            if ($role != '') {
+                $query->where('role', $role);
+            }
+        }
+    
         $users = $query->get();
-
-        return view('web.admin.users.index', compact('users'));
+        $roles = ['Administrativo', 'Jefe de carrera', 'Docente', 'Estudiante', 'Superusuario'];
+    
+        return view('web.admin.users.index', compact('users', 'roles'));
     }
 
     public function create()

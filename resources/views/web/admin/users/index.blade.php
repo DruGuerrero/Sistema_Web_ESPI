@@ -11,12 +11,20 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
-    <!-- Formulario de búsqueda -->
+    <!-- Formulario de búsqueda y filtrado -->
     <form action="{{ route('admin.users.index') }}" method="GET" class="form-inline mb-3">
-        <div class="form-group">
+        <div class="form-group mr-2">
             <input type="text" name="search" class="form-control" placeholder="Buscar usuario" value="{{ request()->input('search') }}">
         </div>
-        <button type="submit" class="btn btn-primary ml-2">Buscar</button>
+        <div class="form-group mr-2">
+            <select name="role" class="form-control">
+                <option value="">Todos los roles</option>
+                @foreach($roles as $role)
+                    <option value="{{ $role }}" {{ request()->input('role') == $role ? 'selected' : '' }}>{{ $role }}</option>
+                @endforeach
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Buscar</button>
     </form>
 
     <a href="{{ route('admin.users.create') }}" class="btn btn-primary mb-3">Crear usuario</a>
