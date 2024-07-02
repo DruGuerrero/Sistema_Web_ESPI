@@ -60,4 +60,6 @@
             @endforeach
         </tbody>
     </table>
+    <!-- Paginación -->
+    {{ $users->links() }}
 @stop

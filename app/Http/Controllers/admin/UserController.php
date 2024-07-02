@@ -37,7 +37,7 @@ class UserController extends Controller
             }
         }
     
-        $users = $query->get();
+        $users = $query->paginate(10);
         $roles = ['Administrativo', 'Jefe de carrera', 'Docente', 'Estudiante', 'Superusuario'];
     
         return view('web.admin.users.index', compact('users', 'roles'));
