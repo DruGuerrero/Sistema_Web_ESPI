@@ -44,7 +44,6 @@
                 <option value="Administrativo" {{ old('role', $user->role) == 'Administrativo' ? 'selected' : '' }}>Administrativo</option>
                 <option value="Jefe de carrera" {{ old('role', $user->role) == 'Jefe de carrera' ? 'selected' : '' }}>Jefe de carrera</option>
                 <option value="Docente" {{ old('role', $user->role) == 'Docente' ? 'selected' : '' }}>Docente</option>
-                <option value="Estudiante" {{ old('role', $user->role) == 'Estudiante' ? 'selected' : '' }}>Estudiante</option>
                 <option value="Superusuario" {{ old('role', $user->role) == 'Superusuario' ? 'selected' : '' }}>Superusuario</option>
             </select>
         </div>

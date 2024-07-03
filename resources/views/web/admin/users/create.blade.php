@@ -42,7 +42,6 @@
                 <option value="Administrativo" {{ old('role') == 'Administrativo' ? 'selected' : '' }}>Administrativo</option>
                 <option value="Jefe de carrera" {{ old('role') == 'Jefe de carrera' ? 'selected' : '' }}>Jefe de carrera</option>
                 <option value="Docente" {{ old('role') == 'Docente' ? 'selected' : '' }}>Docente</option>
-                <option value="Estudiante" {{ old('role') == 'Estudiante' ? 'selected' : '' }}>Estudiante</option>
                 <option value="Superusuario" {{ old('role') == 'Superusuario' ? 'selected' : '' }}>Superusuario</option>
             </select>
         </div>

@@ -43,7 +43,7 @@ class UserController extends Controller
         }
     
         $users = $query->paginate(10);
-        $roles = ['Administrativo', 'Jefe de carrera', 'Docente', 'Estudiante', 'Superusuario'];
+        $roles = ['Administrativo', 'Jefe de carrera', 'Docente', 'Superusuario'];
     
         return view('web.admin.users.index', compact('users', 'roles'));
     }
@@ -68,7 +68,7 @@ class UserController extends Controller
                 'regex:/[0-9]/', // al menos un numero
                 'regex:/[@$!%*?&]/', // al menos un caracter especial
             ],
-            'role' => 'required|string|in:Administrativo,Jefe de carrera,Docente,Estudiante,Superusuario',
+            'role' => 'required|string|in:Administrativo,Jefe de carrera,Docente,Superusuario',
         ], [
             'password.min' => 'La contraseña debe contener al menos 8 caracteres',
             'password.regex' => 'La contraseña debe contener al menos un número, una mayúscula, una minúscula o un caracter especial',
@@ -105,7 +105,7 @@ class UserController extends Controller
                 'regex:/[0-9]/', // al menos un numero
                 'regex:/[@$!%*?&]/', // al menos un caracter especial
             ],
-            'role' => 'required|string|in:Administrativo,Jefe de carrera,Docente,Estudiante,Superusuario',
+            'role' => 'required|string|in:Administrativo,Jefe de carrera,Docente,Superusuario',
         ], [
             'password.min' => 'La contraseña debe contener al menos 8 caracteres',
             'password.regex' => 'La contraseña debe contener al menos un número, una mayúscula, una minúscula o un caracter especial',
