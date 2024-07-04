@@ -79,7 +79,11 @@ class StudentController extends Controller
      */
     public function show(Student $student)
     {
-        return view('web.admin.students.show', compact('student'));
+        // Obtener la foto tipo carnet del estudiante
+        $photo = $student->mediaFiles()->where('type', 'foto_tipo_carnet')->first();
+        $photoUrl = $photo ? asset('storage/' . $photo->file) : asset('/vendor/adminlte/dist/img/default_user.png');
+
+        return view('web.admin.students.show', compact('student', 'photoUrl'));
     }
 
     /**
@@ -126,7 +130,7 @@ class StudentController extends Controller
         }
 
         if ($request->hasFile('foto_tipo_carnet')) {
-            $path = $request->file('foto_tipo_carnet')->store('media_files');
+            $path = $request->file('foto_tipo_carnet')->store('media_files', 'public');
             MediaFile::create([
                 'student_id' => $student->id,
                 'type' => 'foto_tipo_carnet',

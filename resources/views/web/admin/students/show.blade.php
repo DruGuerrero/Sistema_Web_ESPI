@@ -9,13 +9,12 @@
 @section('content')
     <div class="card">
         <div class="card-body">
-            <img src="/vendor/adminlte/dist/img/default_user.png" alt="Foto tipo carnet" class="img-thumbnail">
+            <img src="{{ $photoUrl }}" alt="Foto tipo carnet" class="img-thumbnail">
             <p><strong>Número de carnet:</strong> {{ $student->num_carnet }}</p>
             <p><strong>E-mail:</strong> {{ $student->email }}</p>
             <p><strong>Ciudad de domicilio:</strong> {{ $student->ciudad_domicilio }}</p>
             <p><strong>Número de celular:</strong> {{ $student->num_celular }}</p>
             <p><strong>Carnet escaneado:</strong> <input type="file" disabled></p>
-            <p><strong>Foto tipo carnet:</strong> <input type="file" disabled></p>
             <p><strong>Usuario de moodle:</strong> (Generado más adelante)</p>
             <p><strong>Contraseña de moodle:</strong> (Generado más adelante)</p>
             <p><strong>Matriculado:</strong> {{ $student->matricula }}</p>
@@ -37,10 +36,11 @@
 @section('css')
     <style>
         .card-body img {
-            width: 100px;
-            height: 100px;
+            width: 150px;
+            height: 150px;
             object-fit: cover;
             border-radius: 50%;
+            margin-bottom: 20px;
         }
     </style>
 @stop
