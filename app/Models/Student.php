@@ -28,4 +28,9 @@ class Student extends Model
     protected $casts = [
         'disabled' => 'boolean',
     ];
+
+    public function mediaFiles()
+    {
+        return $this->hasMany(MediaFile::class);
+    }
 }
