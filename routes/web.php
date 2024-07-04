@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\admin\indexController;
 use App\Http\Controllers\admin\UserController;
+use App\Http\Controllers\StudentController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -21,5 +22,6 @@ Route::group(['prefix'=> 'admin', 'middleware' => ['auth:sanctum', 'verified']],
 Route::get('Panel-Administrativo', [indexController::class, 'index'])->name('dashboard');
     Route::group(['middleware' => 'superuser'], function() {
         Route::resource('users', UserController::class)->names('admin.users');
+        Route::resource('students', StudentController::class)->names('admin.students');
     });
 });

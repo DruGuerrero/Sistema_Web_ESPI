@@ -333,6 +333,12 @@ return [
             'icon' => 'fas fa-fw fa-user',
             'can' => 'manage-users',
         ],
+        [
+            'text' => 'Estudiantes',
+            'url' => 'admin/students',
+            'icon' => 'fas fa-fw fa-user',
+            'can' => 'manage-users',
+        ],
     ],
 
     /*
