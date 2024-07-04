@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
+use App\Models\MediaFile;
 use Illuminate\Http\Request;
 
 class StudentController extends Controller
@@ -106,12 +107,32 @@ class StudentController extends Controller
             'celular_tutor' => 'nullable|string|max:255',
             'ciudad_tutor' => 'nullable|string|max:255',
             'parentesco' => 'nullable|string|max:255',
+            'carnet_escaneado' => 'nullable|file|mimes:pdf,jpg,jpeg,png',
+            'foto_tipo_carnet' => 'nullable|file|mimes:jpg,jpeg,png',
         ]);
 
         $data = $request->all();
         $data['matricula'] = $student->matricula; // Mantener el valor existente
 
         $student->update($data);
+
+        if ($request->hasFile('carnet_escaneado')) {
+            $path = $request->file('carnet_escaneado')->store('media_files');
+            MediaFile::create([
+                'student_id' => $student->id,
+                'type' => 'carnet_escaneado',
+                'file' => $path,
+            ]);
+        }
+
+        if ($request->hasFile('foto_tipo_carnet')) {
+            $path = $request->file('foto_tipo_carnet')->store('media_files');
+            MediaFile::create([
+                'student_id' => $student->id,
+                'type' => 'foto_tipo_carnet',
+                'file' => $path,
+            ]);
+        }
 
         return redirect()->route('admin.students.index')->with('success', 'Estudiante actualizado exitosamente.');
     }

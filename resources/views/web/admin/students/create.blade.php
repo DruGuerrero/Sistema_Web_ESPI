@@ -33,7 +33,7 @@
         </div>
         <div class="form-group">
             <label for="num_carnet">Número de carnet:</label>
-            <input type="number" name="num_carnet" class="form-control" value="{{ old('num_carnet') }}" required>
+            <input type="text" name="num_carnet" class="form-control" value="{{ old('num_carnet') }}" required>
         </div>
         <div class="form-group">
             <label for="email">E-mail:</label>
@@ -45,7 +45,7 @@
         </div>
         <div class="form-group">
             <label for="num_celular">Número de celular:</label>
-            <input type="number" name="num_celular" class="form-control" value="{{ old('num_celular') }}" required>
+            <input type="text" name="num_celular" class="form-control" value="{{ old('num_celular') }}" required>
         </div>
         <div class="form-group">
             <label for="nombre_tutor">Nombre del tutor:</label>
@@ -53,7 +53,7 @@
         </div>
         <div class="form-group">
             <label for="celular_tutor">Número de celular del tutor:</label>
-            <input type="number" name="celular_tutor" class="form-control" value="{{ old('celular_tutor') }}" nullable>
+            <input type="text" name="celular_tutor" class="form-control" value="{{ old('celular_tutor') }}" nullable>
         </div>
         <div class="form-group">
             <label for="ciudad_tutor">Ciudad del tutor:</label>
@@ -62,15 +62,6 @@
         <div class="form-group">
             <label for="parentesco">Parentesco:</label>
             <input type="text" name="parentesco" class="form-control" value="{{ old('parentesco') }}" nullable>
-        </div>
-        <!-- Campos de archivos pero no funcionales por ahora -->
-        <div class="form-group">
-            <label for="carnet_escaneado">Carnet escaneado:</label>
-            <input type="file" name="carnet_escaneado" class="form-control" disabled>
-        </div>
-        <div class="form-group">
-            <label for="foto_tipo_carnet">Foto tipo carnet:</label>
-            <input type="file" name="foto_tipo_carnet" class="form-control" disabled>
         </div>
         <a href="{{ route('admin.students.index') }}" class="btn btn-secondary">Cancelar</a>
         <button type="submit" class="btn btn-success">Registrar</button>

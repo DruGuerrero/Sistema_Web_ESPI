@@ -17,7 +17,7 @@
         </div>
     @endif
 
-    <form action="{{ route('admin.students.update', $student->id) }}" method="POST">
+    <form action="{{ route('admin.students.update', $student->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
         <div class="form-group">
@@ -63,6 +63,15 @@
         <div class="form-group">
             <label for="parentesco">Parentesco:</label>
             <input type="text" name="parentesco" class="form-control" value="{{ old('parentesco', $student->parentesco) }}" nullable>
+        </div>
+        <!-- Campos de archivos -->
+        <div class="form-group">
+            <label for="carnet_escaneado">Carnet escaneado:</label>
+            <input type="file" name="carnet_escaneado" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="foto_tipo_carnet">Foto tipo carnet:</label>
+            <input type="file" name="foto_tipo_carnet" class="form-control">
         </div>
         <a href="{{ route('admin.students.index') }}" class="btn btn-secondary">Cancelar</a>
         <button type="submit" class="btn btn-success">Actualizar</button>
