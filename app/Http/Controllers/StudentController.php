@@ -83,7 +83,9 @@ class StudentController extends Controller
         $photo = $student->mediaFiles()->where('type', 'foto_tipo_carnet')->first();
         $photoUrl = $photo ? asset('storage/' . $photo->file) : asset('/vendor/adminlte/dist/img/default_user.png');
 
-        return view('web.admin.students.show', compact('student', 'photoUrl'));
+        $files = $student->mediaFiles;
+
+        return view('web.admin.students.show', compact('student', 'photoUrl', 'files'));
     }
 
     /**
@@ -121,7 +123,7 @@ class StudentController extends Controller
         $student->update($data);
 
         if ($request->hasFile('carnet_escaneado')) {
-            $path = $request->file('carnet_escaneado')->store('media_files');
+            $path = $request->file('carnet_escaneado')->store('media_files', 'public');
             MediaFile::create([
                 'student_id' => $student->id,
                 'type' => 'carnet_escaneado',
@@ -140,6 +142,13 @@ class StudentController extends Controller
 
         return redirect()->route('admin.students.index')->with('success', 'Estudiante actualizado exitosamente.');
     }
+
+    public function download(MediaFile $mediaFile)
+    {
+        $pathToFile = storage_path('app/public/' . $mediaFile->file);
+        return response()->download($pathToFile);
+    }
+
 
     /**
      * Remove the specified resource from storage.

@@ -23,5 +23,6 @@ Route::get('Panel-Administrativo', [indexController::class, 'index'])->name('das
     Route::group(['middleware' => 'superuser'], function() {
         Route::resource('users', UserController::class)->names('admin.users');
         Route::resource('students', StudentController::class)->names('admin.students');
+        Route::get('students/{mediaFile}/download', [StudentController::class, 'download'])->name('admin.students.download');
     });
 });

@@ -14,7 +14,6 @@
             <p><strong>E-mail:</strong> {{ $student->email }}</p>
             <p><strong>Ciudad de domicilio:</strong> {{ $student->ciudad_domicilio }}</p>
             <p><strong>Número de celular:</strong> {{ $student->num_celular }}</p>
-            <p><strong>Carnet escaneado:</strong> <input type="file" disabled></p>
             <p><strong>Usuario de moodle:</strong> (Generado más adelante)</p>
             <p><strong>Contraseña de moodle:</strong> (Generado más adelante)</p>
             <p><strong>Matriculado:</strong> {{ $student->matricula }}</p>
@@ -26,6 +25,23 @@
             <p><strong>Número de celular:</strong> {{ $student->celular_tutor }}</p>
             <p><strong>Ciudad de domicilio:</strong> {{ $student->ciudad_tutor }}</p>
             <p><strong>Parentesco:</strong> {{ $student->parentesco }}</p>
+
+            <hr>
+
+            <h5>Archivos del estudiante</h5>
+            @if($files->isEmpty())
+                <p>No hay archivos guardados para este estudiante.</p>
+            @else
+                <ul>
+                    @foreach($files as $file)
+                        <li>
+                            <a href="{{ route('admin.students.download', $file->id) }}" class="btn btn-primary">
+                                Descargar {{ $file->type }}
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
 
             <a href="{{ route('admin.students.index') }}" class="btn btn-secondary">Volver</a>
             <a href="{{ route('admin.students.edit', $student->id) }}" class="btn btn-primary">Editar</a>
