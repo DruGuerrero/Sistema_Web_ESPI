@@ -149,6 +149,19 @@ class StudentController extends Controller
         return response()->download($pathToFile);
     }
 
+    public function deleteFile(MediaFile $mediaFile)
+    {
+        // Eliminar el archivo del sistema de archivos
+        $filePath = storage_path('app/public/' . $mediaFile->file);
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
+
+        // Eliminar el registro de la base de datos
+        $mediaFile->delete();
+
+        return redirect()->back()->with('success', 'Archivo eliminado exitosamente.');
+    }
 
     /**
      * Remove the specified resource from storage.

@@ -24,5 +24,6 @@ Route::get('Panel-Administrativo', [indexController::class, 'index'])->name('das
         Route::resource('users', UserController::class)->names('admin.users');
         Route::resource('students', StudentController::class)->names('admin.students');
         Route::get('students/{mediaFile}/download', [StudentController::class, 'download'])->name('admin.students.download');
+        Route::delete('students/{mediaFile}/delete', [StudentController::class, 'deleteFile'])->name('admin.students.deleteFile');
     });
 });

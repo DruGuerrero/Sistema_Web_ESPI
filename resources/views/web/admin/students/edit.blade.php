@@ -76,4 +76,26 @@
         <a href="{{ route('admin.students.index') }}" class="btn btn-secondary">Cancelar</a>
         <button type="submit" class="btn btn-success">Actualizar</button>
     </form>
+
+    <hr>
+
+    <h5>Archivos del estudiante</h5>
+    @if($student->mediaFiles->isEmpty())
+        <p>No hay archivos guardados para este estudiante.</p>
+    @else
+        <ul>
+            @foreach($student->mediaFiles as $file)
+                <li>
+                    <a href="{{ route('admin.students.download', $file->id) }}" class="btn btn-primary">
+                        Descargar {{ $file->type }}
+                    </a>
+                    <form action="{{ route('admin.students.deleteFile', $file->id) }}" method="POST" style="display:inline;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                </li>
+            @endforeach
+        </ul>
+    @endif
 @stop
