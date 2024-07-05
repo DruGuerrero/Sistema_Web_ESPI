@@ -130,8 +130,21 @@ class StudentController extends Controller
                 'file' => $path,
             ]);
         }
-
+        // Manejar la lógica de reemplazo de la foto tipo carnet
         if ($request->hasFile('foto_tipo_carnet')) {
+            // Verificar si ya hay una foto tipo carnet existente
+            $existingPhoto = $student->mediaFiles()->where('type', 'foto_tipo_carnet')->first();
+            if ($existingPhoto) {
+                // Eliminar el archivo existente del sistema de archivos
+                $existingFilePath = storage_path('app/public/' . $existingPhoto->file);
+                if (file_exists($existingFilePath)) {
+                    unlink($existingFilePath);
+                }
+                // Eliminar el registro de la base de datos
+                $existingPhoto->delete();
+            }
+
+            // Guardar la nueva foto tipo carnet
             $path = $request->file('foto_tipo_carnet')->store('media_files', 'public');
             MediaFile::create([
                 'student_id' => $student->id,
