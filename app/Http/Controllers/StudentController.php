@@ -176,6 +176,28 @@ class StudentController extends Controller
         return redirect()->back()->with('success', 'Archivo eliminado exitosamente.');
     }
 
+    public function matriculate(Student $student)
+    {
+        // Generar usuario de moodle
+        $moodleUser = strtolower(substr($student->nombre, 0, 2) . $student->apellido_paterno . substr($student->apellido_materno, 0, 1));
+
+        // Generar contraseña de moodle
+        $moodlePass = ucfirst(substr($student->nombre, 0, 2)) . strtolower($student->apellido_paterno) . substr($student->num_carnet, 0, 3) . '*';
+
+        // Actualizar estudiante
+        $student->update([
+            'moodle_user' => $moodleUser,
+            'moodle_pass' => $moodlePass,
+            'matricula' => 'SI',
+        ]);
+
+        // Retornar los datos generados
+        return response()->json([
+            'moodle_user' => $moodleUser,
+            'moodle_pass' => $moodlePass,
+        ]);
+    }
+    
     /**
      * Remove the specified resource from storage.
      */

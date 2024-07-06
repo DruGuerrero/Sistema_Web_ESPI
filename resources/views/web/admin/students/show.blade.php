@@ -14,8 +14,7 @@
             <p><strong>E-mail:</strong> {{ $student->email }}</p>
             <p><strong>Ciudad de domicilio:</strong> {{ $student->ciudad_domicilio }}</p>
             <p><strong>Número de celular:</strong> {{ $student->num_celular }}</p>
-            <p><strong>Usuario de moodle:</strong> (Generado más adelante)</p>
-            <p><strong>Contraseña de moodle:</strong> (Generado más adelante)</p>
+            <p><strong>Usuario de moodle:</strong> {{ $student->moodle_user ?? 'No asignado' }}</p>
             <p><strong>Matriculado:</strong> {{ $student->matricula }}</p>
 
             <hr>
@@ -45,6 +44,31 @@
 
             <a href="{{ route('admin.students.index') }}" class="btn btn-secondary">Volver</a>
             <a href="{{ route('admin.students.edit', $student->id) }}" class="btn btn-primary">Editar</a>
+
+            @if($student->matricula === 'NO')
+                <button class="btn btn-success" id="matricular-btn">Matricular</button>
+            @endif
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="moodleModal" tabindex="-1" role="dialog" aria-labelledby="moodleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="moodleModalLabel">Datos de Moodle</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Usuario:</strong> <span id="moodle-user"></span></p>
+                    <p><strong>Contraseña:</strong> <span id="moodle-pass"></span></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
         </div>
     </div>
 @stop
@@ -59,4 +83,25 @@
             margin-bottom: 20px;
         }
     </style>
+@stop
+
+@section('js')
+    <script>
+        document.getElementById('matricular-btn').addEventListener('click', function() {
+            fetch('{{ route('admin.students.matriculate', $student->id) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('moodle-user').textContent = data.moodle_user;
+                document.getElementById('moodle-pass').textContent = data.moodle_pass;
+                $('#moodleModal').modal('show');
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
 @stop

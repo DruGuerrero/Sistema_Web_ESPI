@@ -23,6 +23,8 @@ class Student extends Model
         'ciudad_tutor',
         'parentesco',
         'disabled',
+        'moodle_user',
+        'moodle_pass',
     ];
 
     protected $casts = [
