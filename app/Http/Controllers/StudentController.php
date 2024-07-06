@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Models\MediaFile;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class StudentController extends Controller
 {
@@ -176,7 +177,7 @@ class StudentController extends Controller
         return redirect()->back()->with('success', 'Archivo eliminado exitosamente.');
     }
 
-    public function matriculate(Student $student)
+    public function matriculate(Request $request, Student $student)
     {
         // Generar usuario de moodle
         $moodleUser = strtolower(substr($student->nombre, 0, 2) . $student->apellido_paterno . substr($student->apellido_materno, 0, 1));
@@ -184,12 +185,14 @@ class StudentController extends Controller
         // Generar contraseña de moodle
         $moodlePass = ucfirst(substr($student->nombre, 0, 2)) . strtolower($student->apellido_paterno) . substr($student->num_carnet, 0, 3) . '*';
 
+        // Encriptar la contraseña
+        $encryptedMoodlePass = Hash::make($moodlePass);
+
         // Actualizar estudiante
-        $student->update([
-            'moodle_user' => $moodleUser,
-            'moodle_pass' => $moodlePass,
-            'matricula' => 'SI',
-        ]);
+        $student->moodle_user = $moodleUser;
+        $student->moodle_pass = $encryptedMoodlePass;
+        $student->matricula = 'SI';
+        $student->save();
 
         // Retornar los datos generados
         return response()->json([
