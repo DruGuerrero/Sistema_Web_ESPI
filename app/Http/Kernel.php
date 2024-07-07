@@ -67,5 +67,6 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'superuser' => \App\Http\Middleware\CheckSuperuser::class,
+        'moodle.permission' => \App\Http\Middleware\CheckMoodlePermission::class,
     ];
 }

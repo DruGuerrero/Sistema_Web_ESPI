@@ -6,6 +6,7 @@ use App\Models\Student;
 use App\Models\MediaFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 
 class StudentController extends Controller
 {
@@ -179,26 +180,49 @@ class StudentController extends Controller
 
     public function matriculate(Request $request, Student $student)
     {
-        // Generar usuario de moodle
-        $moodleUser = strtolower(substr($student->nombre, 0, 2) . $student->apellido_paterno . substr($student->apellido_materno, 0, 1));
+        try {
+            // Generar usuario de moodle
+            $moodleUser = strtolower(substr($student->nombre, 0, 2) . $student->apellido_paterno . substr($student->apellido_materno, 0, 1));
 
-        // Generar contraseña de moodle
-        $moodlePass = ucfirst(substr($student->nombre, 0, 2)) . strtolower($student->apellido_paterno) . substr($student->num_carnet, 0, 3) . '*';
+            // Generar contraseña de moodle
+            $moodlePass = ucfirst(substr($student->nombre, 0, 2)) . strtolower($student->apellido_paterno) . substr($student->num_carnet, 0, 3) . '*';
 
-        // Encriptar la contraseña
-        $encryptedMoodlePass = Hash::make($moodlePass);
+            // Encriptar la contraseña
+            $encryptedMoodlePass = Hash::make($moodlePass);
 
-        // Actualizar estudiante
-        $student->moodle_user = $moodleUser;
-        $student->moodle_pass = $encryptedMoodlePass;
-        $student->matricula = 'SI';
-        $student->save();
+            // Actualizar estudiante
+            $student->moodle_user = $moodleUser;
+            $student->moodle_pass = $encryptedMoodlePass;
+            $student->matricula = 'SI';
+            $student->save();
 
-        // Retornar los datos generados
-        return response()->json([
-            'moodle_user' => $moodleUser,
-            'moodle_pass' => $moodlePass,
-        ]);
+            // Crear cuenta en Moodle
+            $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_create_users&wstoken=1c8ee5d380fcc62c9e429bfc458a7da2'
+                . '&users[0][username]=' . urlencode($moodleUser)
+                . '&users[0][password]=' . urlencode($moodlePass)
+                . '&users[0][firstname]=' . urlencode($student->nombre)
+                . '&users[0][lastname]=' . urlencode($student->apellido_paterno . ' ' . $student->apellido_materno)
+                . '&users[0][email]=' . urlencode($student->email)
+                . '&users[0][auth]=manual'
+                . '&users[0][idnumber]=' . urlencode($student->num_carnet)
+                . '&users[0][lang]=es'
+            );
+
+            // Verificar respuesta de Moodle
+            if ($response->failed()) {
+                Log::error('Error creando usuario en Moodle: ' . $response->body());
+                return response()->json(['error' => 'Error creating user in Moodle'], 500);
+            }
+
+            // Retornar los datos generados (sin encriptar la contraseña)
+            return response()->json([
+                'moodle_user' => $moodleUser,
+                'moodle_pass' => $moodlePass,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error matriculating student: ' . $e->getMessage());
+            return response()->json(['error' => 'Error matriculating student'], 500);
+        }
     }
     
     /**
