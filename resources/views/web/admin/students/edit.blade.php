@@ -73,6 +73,10 @@
             <label for="foto_tipo_carnet">Foto tipo carnet:</label>
             <input type="file" name="foto_tipo_carnet" class="form-control">
         </div>
+        <div class="form-group form-check">
+            <input type="checkbox" name="disabled" class="form-check-input" id="disabled" {{ $student->disabled ? '' : 'checked' }}>
+            <label class="form-check-label" for="disabled">Habilitar</label>
+        </div>
         <a href="{{ route('admin.students.index') }}" class="btn btn-secondary">Cancelar</a>
         <button type="submit" class="btn btn-success">Actualizar</button>
     </form>

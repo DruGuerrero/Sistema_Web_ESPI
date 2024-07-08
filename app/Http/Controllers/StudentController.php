@@ -124,6 +124,7 @@ class StudentController extends Controller
 
         $data = $request->all();
         $data['matricula'] = $student->matricula; // Mantener el valor existente
+        $data['disabled'] = $request->has('disabled') ? 0 : 1;
 
         $student->update($data);
 

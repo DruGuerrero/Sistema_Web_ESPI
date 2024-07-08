@@ -34,6 +34,7 @@
                 <th>N°</th>
                 <th>Nombre</th>
                 <th>Matricula</th>
+                <th>Estado</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -43,6 +44,7 @@
                     <td>{{ $loop->iteration + $index }}</td>
                     <td>{{ $student->nombre }} {{ $student->apellido_paterno }} {{ $student->apellido_materno }}</td>
                     <td>{{ $student->matricula }}</td>
+                    <td>{{ $student->disabled ? 'Deshabilitado' : 'Habilitado' }}</td>
                     <td>
                         <a href="{{ route('admin.students.show', $student->id) }}" class="btn btn-info btn-sm">Ver detalles</a>
                     </td>
