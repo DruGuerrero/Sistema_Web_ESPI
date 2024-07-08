@@ -31,6 +31,7 @@
     <table class="table table-bordered">
         <thead>
             <tr>
+                <th>N°</th>
                 <th>Nombre</th>
                 <th>Matricula</th>
                 <th>Acciones</th>
@@ -39,6 +40,7 @@
         <tbody>
             @foreach($students as $student)
                 <tr>
+                    <td>{{ $loop->iteration + $index }}</td>
                     <td>{{ $student->nombre }} {{ $student->apellido_paterno }} {{ $student->apellido_materno }}</td>
                     <td>{{ $student->matricula }}</td>
                     <td>

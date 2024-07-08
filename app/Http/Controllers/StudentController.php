@@ -38,7 +38,10 @@ class StudentController extends Controller
 
         $students = $query->paginate(10);
 
-        return view('web.admin.students.index', compact('students'));
+        return view('web.admin.students.index', [
+            'students' => $students,
+            'index' => ($students->currentPage() - 1) * $students->perPage()
+        ]);
     }
 
     /**
