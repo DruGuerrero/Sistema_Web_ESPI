@@ -218,6 +218,48 @@ class StudentController extends Controller
                 return response()->json(['error' => 'Error creating user in Moodle'], 500);
             }
 
+            $createdUser = $response->json()[0];
+            $userId = $createdUser['id'];
+
+            // ID de la categoría de cursos
+            $categoryId = 3; // Cambia esto al ID de la categoría deseada
+
+            // Obtener todos los cursos en la categoría
+            $coursesResponse = Http::get('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_get_courses_by_field&wstoken=1c8ee5d380fcc62c9e429bfc458a7da2'
+                . '&field=category'
+                . '&value=' . $categoryId
+            );
+
+            if ($coursesResponse->failed()) {
+                Log::error('Error obteniendo cursos de Moodle: ' . $coursesResponse->body());
+                return response()->json(['error' => 'Error fetching courses from Moodle'], 500);
+            }
+
+            $courses = $coursesResponse->json()['courses'];
+
+            // Preparar enrolments
+            $enrolments = [];
+            foreach ($courses as $course) {
+                $enrolments[] = [
+                    'roleid' => 5, // Role ID for student
+                    'userid' => $userId,
+                    'courseid' => $course['id']
+                ];
+            }
+
+            // Enroll user in each course
+            foreach($enrolments as $enrol){
+                $enrolResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=enrol_manual_enrol_users&wstoken=1c8ee5d380fcc62c9e429bfc458a7da2'
+                    . '&enrolments[0][roleid]=' . urlencode($enrol['roleid'])
+                    . '&enrolments[0][userid]=' . urlencode($enrol['userid'])
+                    . '&enrolments[0][courseid]=' . urlencode($enrol['courseid'])
+                );
+                if ($enrolResponse->failed()) {
+                    Log::error('Error enrolando usuario en cursos de Moodle: ' . $enrolResponse->body());
+                    return response()->json(['error' => 'Error enrolling user in Moodle courses'], 500);
+                }
+            }
+
             // Retornar los datos generados (sin encriptar la contraseña)
             return response()->json([
                 'moodle_user' => $moodleUser,
