@@ -7,6 +7,7 @@ use App\Models\MediaFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\Log;
 
 class StudentController extends Controller
 {
@@ -194,14 +195,9 @@ class StudentController extends Controller
             // Encriptar la contraseña
             $encryptedMoodlePass = Hash::make($moodlePass);
 
-            // Actualizar estudiante
-            $student->moodle_user = $moodleUser;
-            $student->moodle_pass = $encryptedMoodlePass;
-            $student->matricula = 'SI';
-            $student->save();
 
             // Crear cuenta en Moodle
-            $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_create_users&wstoken=1c8ee5d380fcc62c9e429bfc458a7da2'
+            $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_create_users&wstoken=838e1a662579f855f5d1ef5e1c3da72e'
                 . '&users[0][username]=' . urlencode($moodleUser)
                 . '&users[0][password]=' . urlencode($moodlePass)
                 . '&users[0][firstname]=' . urlencode($student->nombre)
@@ -218,6 +214,12 @@ class StudentController extends Controller
                 return response()->json(['error' => 'Error creating user in Moodle'], 500);
             }
 
+            // Actualizar estudiante
+            $student->moodle_user = $moodleUser;
+            $student->moodle_pass = $encryptedMoodlePass;
+            $student->matricula = 'SI';
+            $student->save();
+            
             $createdUser = $response->json()[0];
             $userId = $createdUser['id'];
 
@@ -225,7 +227,7 @@ class StudentController extends Controller
             $categoryId = 3; // Cambia esto al ID de la categoría deseada
 
             // Obtener todos los cursos en la categoría
-            $coursesResponse = Http::get('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_get_courses_by_field&wstoken=1c8ee5d380fcc62c9e429bfc458a7da2'
+            $coursesResponse = Http::get('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_get_courses_by_field&wstoken=838e1a662579f855f5d1ef5e1c3da72e'
                 . '&field=category'
                 . '&value=' . $categoryId
             );
@@ -249,7 +251,7 @@ class StudentController extends Controller
 
             // Enroll user in each course
             foreach($enrolments as $enrol){
-                $enrolResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=enrol_manual_enrol_users&wstoken=1c8ee5d380fcc62c9e429bfc458a7da2'
+                $enrolResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=enrol_manual_enrol_users&wstoken=838e1a662579f855f5d1ef5e1c3da72e'
                     . '&enrolments[0][roleid]=' . urlencode($enrol['roleid'])
                     . '&enrolments[0][userid]=' . urlencode($enrol['userid'])
                     . '&enrolments[0][courseid]=' . urlencode($enrol['courseid'])
@@ -266,8 +268,8 @@ class StudentController extends Controller
                 'moodle_pass' => $moodlePass,
             ]);
         } catch (\Exception $e) {
-            Log::error('Error matriculating student: ' . $e->getMessage());
-            return response()->json(['error' => 'Error matriculating student'], 500);
+            // Log::error('Error matriculating student: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
     
