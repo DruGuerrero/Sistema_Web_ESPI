@@ -188,9 +188,12 @@ class StudentController extends Controller
         try {
             // Generar usuario de moodle
             $moodleUser = strtolower(substr($student->nombre, 0, 2) . $student->apellido_paterno . substr($student->apellido_materno, 0, 1));
+            $moodleUser = str_replace('ñ', 'n', $moodleUser);
 
             // Generar contraseña de moodle
             $moodlePass = ucfirst(substr($student->nombre, 0, 2)) . strtolower($student->apellido_paterno) . substr($student->num_carnet, 0, 3) . '*';
+            $moodlePass = str_replace('ñ', 'n', $moodlePass);
+
 
             // Encriptar la contraseña
             $encryptedMoodlePass = Hash::make($moodlePass);
