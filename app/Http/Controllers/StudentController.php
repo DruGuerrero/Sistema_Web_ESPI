@@ -278,7 +278,7 @@ class StudentController extends Controller
                 'moodle_pass' => $moodlePass,
             ]);
         } catch (\Exception $e) {
-            // Log::error('Error matriculating student: ' . $e->getMessage());
+            Log::error('Error matriculating student: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
