@@ -47,6 +47,10 @@
                 <option value="Superusuario" {{ old('role', $user->role) == 'Superusuario' ? 'selected' : '' }}>Superusuario</option>
             </select>
         </div>
+        <div class="form-group">
+            <label for="disabled">Habilitar</label>
+            <input type="checkbox" name="disabled" {{ !$user->disabled ? 'checked' : '' }}>
+        </div>
         <button type="submit" class="btn btn-success">Actualizar</button>
         <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Cancelar</a>
     </form>

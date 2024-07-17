@@ -116,6 +116,7 @@ class UserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'role' => $request->role,
+            'disabled' => $request->has('disabled') ? 0 : 1,
         ];
 
         if ($request->password) {
