@@ -5,6 +5,8 @@ use Illuminate\Support\ServiceProvider;
 
 return [
 
+    'moodle_api_key' => env('MOODLE_API_KEY', null),
+
     /*
     |--------------------------------------------------------------------------
     | Application Name

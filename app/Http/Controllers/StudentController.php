@@ -7,7 +7,8 @@ use App\Models\MediaFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
-use App\Http\Controllers\Log;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Config;
 
 class StudentController extends Controller
 {
@@ -187,20 +188,24 @@ class StudentController extends Controller
     {
         try {
             // Generar usuario de moodle
-            $moodleUser = strtolower(substr($student->nombre, 0, 2) . $student->apellido_paterno . substr($student->apellido_materno, 0, 1));
+            $nombre = str_replace('ñ', 'n', $student->nombre);
+            $apellidopaterno = str_replace('ñ', 'n', $student->apellido_paterno);
+            $moodleUser = strtolower(substr($nombre, 0, 2) . $apellidopaterno . substr($student->apellido_materno, 0, 1));
+            $moodleUser .= substr($student->num_carnet, -2) . substr($student->num_celular, -2);
             $moodleUser = str_replace('ñ', 'n', $moodleUser);
 
             // Generar contraseña de moodle
-            $moodlePass = ucfirst(substr($student->nombre, 0, 2)) . strtolower($student->apellido_paterno) . substr($student->num_carnet, 0, 3) . '*';
+            $moodlePass = ucfirst(substr($nombre, 0, 2)) . strtolower($apellidopaterno) . substr($student->num_carnet, 0, 3) . '*';
             $moodlePass = str_replace('ñ', 'n', $moodlePass);
-
 
             // Encriptar la contraseña
             $encryptedMoodlePass = Hash::make($moodlePass);
 
+            $apikey = Config::get('app.moodle_api_key');
 
             // Crear cuenta en Moodle
-            $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_create_users&wstoken=838e1a662579f855f5d1ef5e1c3da72e'
+            $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_create_users'
+                . '&wstoken=' . urldecode($apikey)
                 . '&users[0][username]=' . urlencode($moodleUser)
                 . '&users[0][password]=' . urlencode($moodlePass)
                 . '&users[0][firstname]=' . urlencode($student->nombre)
@@ -230,7 +235,8 @@ class StudentController extends Controller
             $categoryId = 3; // Cambia esto al ID de la categoría deseada
 
             // Obtener todos los cursos en la categoría
-            $coursesResponse = Http::get('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_get_courses_by_field&wstoken=838e1a662579f855f5d1ef5e1c3da72e'
+            $coursesResponse = Http::get('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_get_courses_by_field'
+                . '&wstoken=' . urldecode($apikey)
                 . '&field=category'
                 . '&value=' . $categoryId
             );
@@ -254,7 +260,8 @@ class StudentController extends Controller
 
             // Enroll user in each course
             foreach($enrolments as $enrol){
-                $enrolResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=enrol_manual_enrol_users&wstoken=838e1a662579f855f5d1ef5e1c3da72e'
+                $enrolResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=enrol_manual_enrol_users'
+                    . '&wstoken=' . urldecode($apikey)
                     . '&enrolments[0][roleid]=' . urlencode($enrol['roleid'])
                     . '&enrolments[0][userid]=' . urlencode($enrol['userid'])
                     . '&enrolments[0][courseid]=' . urlencode($enrol['courseid'])
