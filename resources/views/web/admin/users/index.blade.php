@@ -32,7 +32,7 @@
     <table class="table table-bordered">
         <thead>
             <tr>
-                <th>ID</th>
+                <th>N°</th>
                 <th>Nombre</th>
                 <th>Email</th>
                 <th>Rol</th>
@@ -40,10 +40,10 @@
             </tr>
         </thead>
         <tbody>
-            @foreach($users as $user)
+            @foreach($users as $index => $user)
                 @if ($user->disabled == 0)
                     <tr>
-                        <td>{{ $user->id }}</td>
+                        <td>{{ $users->firstItem() + $index }}</td>
                         <td>{{ $user->name }}</td>
                         <td>{{ $user->email }}</td>
                         <td>{{ $user->role }}</td>
