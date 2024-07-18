@@ -339,6 +339,12 @@ return [
             'icon' => 'fas fa-fw fa-user',
             'can' => 'manage-users',
         ],
+        [
+            'text' => 'Gestión académica',
+            'url' => 'admin/academic',
+            'icon' => 'fas fa-fw fa-user',
+            'can' => 'manage-users',
+        ],
     ],
 
     /*
