@@ -3,6 +3,7 @@
 @section('title', 'Users')
 
 @section('content_header')
+    @vite(['resources/css/app.css','resources/js/app.js'])
     <h1>Usuarios</h1>
 @stop
 
@@ -29,32 +30,24 @@
 
     <a href="{{ route('admin.users.create') }}" class="btn btn-primary mb-3">Crear usuario</a>
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>N°</th>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Rol</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($users as $index => $user)
-                @if ($user->disabled == 0)
-                    <tr>
-                        <td>{{ $users->firstItem() + $index }}</td>
-                        <td>{{ $user->name }}</td>
-                        <td>{{ $user->email }}</td>
-                        <td>{{ $user->role }}</td>
-                        <td>
-                            <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-warning btn-sm">Editar</a>
-                        </td>
-                    </tr>
-                @endif
-            @endforeach
-        </tbody>
-    </table>
+    @php
+        $headers = ['N°', 'Nombre', 'Email', 'Rol', 'Acciones'];
+        $rows = $users->map(function ($user, $index) use ($users) {
+            return [
+                $users->firstItem() + $index,
+                $user->name,
+                $user->email,
+                $user->role,
+                view('components.button-preline', [
+                    'attributes' => new \Illuminate\View\ComponentAttributeBag(['onclick' => "window.location='".route('admin.users.edit', $user->id)."'"]),
+                    'slot' => 'Editar'
+                ])->render()
+            ];
+        })->toArray();
+    @endphp
+
+    <x-table :headers="$headers" :rows="$rows" />
+
     <!-- Paginación -->
     {{ $users->links() }}
 @stop

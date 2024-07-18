@@ -3,6 +3,7 @@
 @section('title', 'Edit User')
 
 @section('content_header')
+    @vite(['resources/css/app.css','resources/js/app.js'])
     <h1>Editar usuario</h1>
 @stop
 
@@ -49,7 +50,7 @@
         </div>
         <div class="form-group">
             <label for="disabled">Habilitar</label>
-            <input type="checkbox" name="disabled" {{ !$user->disabled ? 'checked' : '' }}>
+            <x-checkbox name="disabled" :checked="!$user->disabled"></x-checkbox>
         </div>
         <button type="submit" class="btn btn-success">Actualizar</button>
         <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Cancelar</a>
