@@ -4,7 +4,7 @@
 
 @section('content_header')
     @vite(['resources/css/app.css','resources/js/app.js'])
-    <h1>Usuarios</h1>
+    <h1 class="px-3">Usuarios</h1>
 @stop
 
 @section('content')
@@ -13,7 +13,7 @@
     @endif
 
     <!-- Formulario de búsqueda y filtrado -->
-    <form action="{{ route('admin.users.index') }}" method="GET" class="form-inline mb-3">
+    <form action="{{ route('admin.users.index') }}" method="GET" class="form-inline mb-3 px-2.5">
         <div class="form-group mr-2">
             <input type="text" name="search" class="form-control" placeholder="Buscar usuario" value="{{ request()->input('search') }}">
         </div>
@@ -27,9 +27,9 @@
         </div>
         <button type="submit" class="btn btn-primary">Buscar</button>
     </form>
-
-    <a href="{{ route('admin.users.create') }}" class="btn btn-primary mb-3">Crear usuario</a>
-
+    <div class="px-2.5">
+        <a href="{{ route('admin.users.create') }}" class="btn btn-primary mb-3">Crear usuario</a>
+    </div>
     @php
         $headers = ['N°', 'Nombre', 'Email', 'Rol', 'Acciones'];
         $rows = $users->map(function ($user, $index) use ($users) {
