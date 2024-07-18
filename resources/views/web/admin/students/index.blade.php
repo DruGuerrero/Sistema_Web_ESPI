@@ -3,6 +3,7 @@
 @section('title', 'Lista de Estudiantes')
 
 @section('content_header')
+    @vite(['resources/css/app.css','resources/js/app.js'])
     <h1>Lista de Estudiantes</h1>
 @stop
 
@@ -28,7 +29,7 @@
 
     <a href="{{ route('admin.students.create') }}" class="btn btn-primary mb-3">Registrar nuevo</a>
 
-    <table class="table table-bordered">
+    {{-- <table class="table table-bordered">
         <thead>
             <tr>
                 <th>N°</th>
@@ -51,8 +52,26 @@
                 </tr>
             @endforeach
         </tbody>
-    </table>
+    </table> --}}
+
+    @php
+        $headers = ['N°', 'Nombre', 'Matricula', 'Estado', 'Acciones'];
+        $rows = $students->map(function ($student, $index) use ($students) {
+            return [
+                $students->firstItem() + $index,
+                $student->nombre . ' ' . $student->apellido_paterno . ' ' . $student->apellido_materno,
+                $student->matricula,
+                $student->disabled ? 'Deshabilitado' : 'Habilitado',
+                view('components.button-preline', [
+                    'attributes' => new \Illuminate\View\ComponentAttributeBag(['onclick' => "window.location='".route('admin.students.show', $student->id)."'"]),
+                    'slot' => 'Ver detalles'
+                ])->render()
+            ];
+        })->toArray();
+    @endphp
+
+    <x-table :headers="$headers" :rows="$rows" />
 
     <!-- Agregar paginación -->
-    {{ $students->links() }}
+    <x-pagination :paginator="$students" />
 @stop

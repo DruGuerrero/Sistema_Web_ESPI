@@ -49,5 +49,5 @@
     <x-table :headers="$headers" :rows="$rows" />
 
     <!-- Paginación -->
-    {{ $users->links() }}
+    <x-pagination :paginator="$users" />
 @stop
