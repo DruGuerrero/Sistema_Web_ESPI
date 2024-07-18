@@ -29,31 +29,6 @@
 
     <a href="{{ route('admin.students.create') }}" class="btn btn-primary mb-3">Registrar nuevo</a>
 
-    {{-- <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>N°</th>
-                <th>Nombre</th>
-                <th>Matricula</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($students as $student)
-                <tr>
-                    <td>{{ $loop->iteration + $index }}</td>
-                    <td>{{ $student->nombre }} {{ $student->apellido_paterno }} {{ $student->apellido_materno }}</td>
-                    <td>{{ $student->matricula }}</td>
-                    <td>{{ $student->disabled ? 'Deshabilitado' : 'Habilitado' }}</td>
-                    <td>
-                        <a href="{{ route('admin.students.show', $student->id) }}" class="btn btn-info btn-sm">Ver detalles</a>
-                    </td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table> --}}
-
     @php
         $headers = ['N°', 'Nombre', 'Matricula', 'Estado', 'Acciones'];
         $rows = $students->map(function ($student, $index) use ($students) {
