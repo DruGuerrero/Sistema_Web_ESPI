@@ -15,16 +15,16 @@
     <!-- Formulario de búsqueda y filtrado -->
     <form action="{{ route('admin.users.index') }}" method="GET" class="form-inline mb-3 px-2.5">
         <div class="form-group mr-2">
-            <input type="text" name="search" class="form-control" placeholder="Buscar usuario" value="{{ request()->input('search') }}">
+            <x-search-input-preline placeholder="Escribe un nombre o email" value="{{ request()->input('search') }}" name="search" />
         </div>
         <div class="form-group mr-2">
-            <select name="role" class="form-control">
-                <option value="">Todos los roles</option>
-                @foreach($roles as $role)
-                    <option value="{{ $role }}" {{ request()->input('role') == $role ? 'selected' : '' }}>{{ $role }}</option>
-                @endforeach
-            </select>
-        </div>
+            <x-select-filter-preline 
+                :options="$roles" 
+                placeholder="Todos los roles" 
+                name="role" 
+                selected="{{ request()->input('role') }}" 
+            />
+        </div>        
         <button type="submit" class="btn btn-primary">Buscar</button>
     </form>
     <div class="px-2.5">

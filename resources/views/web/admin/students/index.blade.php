@@ -15,14 +15,15 @@
     <!-- Formulario de búsqueda y filtrado -->
     <form action="{{ route('admin.students.index') }}" method="GET" class="form-inline mb-3">
         <div class="form-group mr-2">
-            <input type="text" name="search" class="form-control" placeholder="Buscar" value="{{ request()->input('search') }}">
+            <x-search-input-preline placeholder="Escribe un nombre" value="{{ request()->input('search') }}" name="search" />
         </div>
         <div class="form-group mr-2">
-            <select name="filter" class="form-control">
-                <option value="">Mostrar todos</option>
-                <option value="Matriculado" {{ request()->input('filter') == 'Matriculado' ? 'selected' : '' }}>Matriculado</option>
-                <option value="No matriculado" {{ request()->input('filter') == 'No matriculado' ? 'selected' : '' }}>No matriculado</option>
-            </select>
+            <x-select-filter-preline 
+                :options="['Matriculado', 'No matriculado']" 
+                placeholder="Mostrar todos" 
+                name="filter" 
+                selected="{{ request()->input('filter') }}" 
+            />
         </div>
         <button type="submit" class="btn btn-primary">Buscar</button>
     </form>
