@@ -41,8 +41,8 @@ class AcademicManagementController extends Controller
                 $categoryName = $category['name'];
                 $categoryDescription = strip_tags($category['description']); // Eliminar etiquetas HTML
 
-                // Inicializar el total de estudiantes
-                $totalStudents = 0;
+                // Inicializar el conjunto de estudiantes únicos
+                $uniqueStudents = collect();
 
                 // Obtener categorías hijo
                 $subCategoriesResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_get_categories'
@@ -88,14 +88,16 @@ class AcademicManagementController extends Controller
                         }
 
                         $enrolledUsers = $enrolledUsersResponse->json();
-                        $totalStudents += count($enrolledUsers);
+                        foreach ($enrolledUsers as $user) {
+                            $uniqueStudents->add($user['id']);
+                        }
                     }
                 }
 
                 // Solo agregar la categoría padre al array de carreras
                 $careers[] = [
                     'name' => $categoryName,
-                    'students' => $totalStudents,
+                    'students' => $uniqueStudents->unique()->count(),
                     'description' => $categoryDescription,
                 ];
 
