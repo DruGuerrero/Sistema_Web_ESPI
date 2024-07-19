@@ -24,11 +24,13 @@ Route::get('Panel-Administrativo', [indexController::class, 'index'])->name('das
     Route::group(['middleware' => 'superuser'], function() {
         Route::resource('users', UserController::class)->names('admin.users');
         Route::resource('students', StudentController::class)->names('admin.students');
-        Route::resource('academic', AcademicManagementController::class)->names('admin.academic');
         Route::get('students/{mediaFile}/download', [StudentController::class, 'download'])->name('admin.students.download');
         Route::delete('students/{mediaFile}/delete', [StudentController::class, 'deleteFile'])->name('admin.students.deleteFile');
         Route::post('students/{student}/matriculate', [StudentController::class, 'matriculate'])
             ->name('admin.students.matriculate')
             ->middleware('moodle.permission');
+        Route::resource('academic', AcademicManagementController::class)->names('admin.academic');
+        Route::get('academic/create', [AcademicManagementController::class, 'create'])->name('admin.academic.create');
+        Route::post('academic', [AcademicManagementController::class, 'store'])->name('admin.academic.store');
     });
 });

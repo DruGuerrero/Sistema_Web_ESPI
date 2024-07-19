@@ -6,7 +6,7 @@
     @vite(['resources/css/app.css','resources/js/app.js'])
     <div class="d-flex justify-content-between">
         <h1>Carreras</h1>
-        <a href="#" class="btn btn-primary">Agregar carrera</a>
+        <a href="{{ route('admin.academic.create') }}" class="btn btn-primary mb-3">Agregar carrera</a>
     </div>
     <hr>
 @stop

@@ -107,4 +107,43 @@ class AcademicManagementController extends Controller
 
         return view('web.admin.academic.index', compact('careers'));
     }
+
+    public function create()
+    {
+        return view('web.admin.academic.create');
+    }
+
+    public function store(Request $request)
+    {
+        $apikey = Config::get('app.moodle_api_key_detalles_categorias');
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+        ]);
+
+        $name = urlencode($request->input('name'));
+        $description = urlencode($request->input('description'));
+
+        // Crear categoría en Moodle
+        $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_create_categories'
+            . '&wstoken=' . urldecode($apikey)
+            . '&categories[0][name]=' . $name
+            . '&categories[0][parent]=0' // Categoría padre
+            . '&categories[0][description]=' . $description
+            . '&categories[0][descriptionformat]=2' // PLAIN
+        );
+
+        if ($response->failed()) {
+            Log::error('Error creando categoría en Moodle: ' . $response->body());
+            return redirect()->back()->withErrors(['error' => 'Error creando categoría en Moodle']);
+        }
+
+        Log::info('Respuesta de Moodle: ' . $response->body());
+
+        // Limpiar caché para actualizar la lista de categorías
+        Cache::forget('moodle_careers');
+
+        return redirect()->route('admin.academic.index')->with('success', 'Carrera creada exitosamente.');
+    }
 }
