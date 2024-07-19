@@ -201,7 +201,7 @@ class StudentController extends Controller
             // Encriptar la contraseña
             $encryptedMoodlePass = Hash::make($moodlePass);
 
-            $apikey = Config::get('app.moodle_api_key');
+            $apikey = Config::get('app.moodle_api_key_matricular');
 
             // Crear cuenta en Moodle
             $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_create_users'

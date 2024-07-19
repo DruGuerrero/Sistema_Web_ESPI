@@ -12,7 +12,7 @@ class AcademicManagementController extends Controller
 {
     public function index()
     {
-        $apikey = Config::get('app.moodle_api_key');
+        $apikey = Config::get('app.moodle_api_key_detalles_categorias');
 
         // Intentar obtener de la caché primero
         $careers = Cache::remember('moodle_careers', 60, function () use ($apikey) {
