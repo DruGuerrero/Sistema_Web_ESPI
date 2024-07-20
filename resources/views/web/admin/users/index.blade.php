@@ -4,7 +4,10 @@
 
 @section('content_header')
     @vite(['resources/css/app.css','resources/js/app.js'])
-    <h1 class="px-3">Usuarios</h1>
+    <div class="px-2.5">
+        <h1>Usuarios</h1>
+        <hr>
+    </div>
 @stop
 
 @section('content')

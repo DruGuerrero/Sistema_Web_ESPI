@@ -4,7 +4,10 @@
 
 @section('content_header')
     @vite(['resources/css/app.css','resources/js/app.js'])
-    <h1>Lista de Estudiantes</h1>
+    <div class="px-2.5">
+        <h1>Lista de Estudiantes</h1>
+        <hr>
+    </div>
 @stop
 
 @section('content')
@@ -13,7 +16,7 @@
     @endif
 
     <!-- Formulario de búsqueda y filtrado -->
-    <form action="{{ route('admin.students.index') }}" method="GET" class="form-inline mb-3">
+    <form action="{{ route('admin.students.index') }}" method="GET" class="form-inline mb-3 px-2.5">
         <div class="form-group mr-2">
             <x-search-input-preline placeholder="Escribe un nombre" value="{{ request()->input('search') }}" name="search" />
         </div>
@@ -28,7 +31,9 @@
         <button type="submit" class="btn btn-primary">Buscar</button>
     </form>
 
-    <a href="{{ route('admin.students.create') }}" class="btn btn-primary mb-3">Registrar nuevo</a>
+    <div class="px-2.5">
+        <a href="{{ route('admin.students.create') }}" class="btn btn-primary mb-3">Registrar nuevo</a>
+    </div>
 
     @php
         $headers = ['N°', 'Nombre', 'Matricula', 'Estado', 'Acciones'];
