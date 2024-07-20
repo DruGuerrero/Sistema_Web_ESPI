@@ -19,7 +19,7 @@
                     title="{{ $career['name'] }}"
                     subtitle="{{ $career['students'] }} estudiantes"
                     content="{{ $career['description'] }}"
-                    link="#"
+                    link="{{ route('admin.academic.show', ['id' => $career['id']]) }}"
                     linkText="Ver detalles"
                 />
             </div>
