@@ -5,10 +5,11 @@
 @section('content_header')
     @vite(['resources/css/app.css','resources/js/app.js'])
     <h1>{{ $category['name'] }}</h1>
+    <hr>
 @stop
 
 @section('content')
-    <p>{{ strip_tags($category['description']) }}</p>
+    <p class="py-0.5">{{ strip_tags($category['description']) }}</p>
     <div class="row">
         @foreach($subCategories as $subCategory)
             <div class="col-md-6 mb-4">
@@ -17,7 +18,7 @@
                     content="{{ strip_tags($subCategory['description']) }}"
                     :contentBlocks="$coursesAndProfessors[$subCategory['id']] ?? []"
                     leftButtonLink="#"
-                    rightButtonLink="#"
+                    rightButtonLink="{{ route('admin.academic.show_subcategory', ['id' => $subCategory['id']]) }}"
                 />
             </div>
         @endforeach

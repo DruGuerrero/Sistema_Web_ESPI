@@ -1,29 +1,37 @@
 <div class="flex flex-col bg-white border shadow-sm rounded-xl p-4 md:p-5">
-    <h3 class="text-lg font-bold text-gray-800">
+    <h3 class="text-lg font-bold text-gray-800 text-center">
         {{ $title }}
     </h3>
-    <p class="mt-2 text-gray-500">
+
+    @if (!empty($image))
+    <div class="flex justify-center my-3">
+        <img src="{{ $image }}" alt="Course Image" class="w-50 h-auto rounded-lg object-cover">
+    </div>
+    @endif
+
+    <p class="mt-2 text-gray-500 text-justify">
         {{ $content }}
     </p>
+
     <div class="mt-2 text-gray-500 space-y-2">
         @foreach ($contentBlocks as $block)
-            <div class="flex items-center">
-                <div class="flex items-center justify-center bg-blue-100 border border-blue-500 text-black rounded-lg py-1 px-2 mr-2 w-48 h-10 text-ellipsis overflow-hidden whitespace-nowrap">
-                    {{ $block['name'] }}
+            @if(is_array($block))
+                <div class="flex items-center">
+                    <div class="flex items-center justify-center bg-blue-100 border border-blue-500 text-black rounded-lg py-1 px-2 mr-2 w-32 h-10">
+                        {{ $block['name'] }}
+                    </div>
+                    <span>{{ $block['professor'] }}</span>
                 </div>
-                <span>{{ $block['professor'] }}</span>
-            </div>
+            @endif
         @endforeach
     </div>
+
     <div class="flex justify-between mt-4">
-        <a class="inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800" href="{{ $leftButtonLink }}">
+        <a class="inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none" href="{{ $leftButtonLink }}">
             Eliminar
         </a>
-        <a class="inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800" href="{{ $rightButtonLink }}">
+        <a class="inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none" href="{{ $rightButtonLink }}">
             Ver
-            <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m9 18 6-6-6-6"></path>
-            </svg>
         </a>
     </div>
 </div>

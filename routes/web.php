@@ -33,5 +33,6 @@ Route::get('Panel-Administrativo', [indexController::class, 'index'])->name('das
         Route::get('academic/create', [AcademicManagementController::class, 'create'])->name('admin.academic.create');
         Route::post('academic', [AcademicManagementController::class, 'store'])->name('admin.academic.store');
         Route::get('academic/{id}', [AcademicManagementController::class, 'show'])->name('admin.academic.show');
+        Route::get('academic/subcategory/{id}', [AcademicManagementController::class, 'showSubCategory'])->name('admin.academic.show_subcategory');
     });
 });
