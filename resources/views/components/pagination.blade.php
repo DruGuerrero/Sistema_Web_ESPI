@@ -1,7 +1,7 @@
 @props(['paginator'])
 
 @if ($paginator->hasPages())
-    <nav class="flex justify-center items-center -space-x-px py-4">
+    <nav class="flex justify-center items-center -space-x-px py-1">
         {{-- Previous Page Link --}}
         @if ($paginator->onFirstPage())
             <button type="button" class="min-h-[38px] min-w-[38px] py-2 px-2.5 inline-flex justify-center items-center gap-x-1.5 text-sm first:rounded-s-lg last:rounded-e-lg border border-gray-200 text-gray-800 focus:outline-none disabled:opacity-50 disabled:pointer-events-none">

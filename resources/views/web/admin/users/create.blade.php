@@ -17,7 +17,6 @@
         </div>
     @endif
 
-@section('content')
     <form action="{{ route('admin.users.store') }}" method="POST">
         @csrf
         <div class="form-group">

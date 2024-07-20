@@ -15,6 +15,28 @@
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    @if (session('moodleUserData'))
+        <div class="modal fade" id="moodleUserModal" tabindex="-1" role="dialog" aria-labelledby="moodleUserModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="moodleUserModalLabel">Cuenta Moodle Creada</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Usuario Moodle:</strong> {{ session('moodleUserData')['moodle_user'] }}</p>
+                        <p><strong>Contraseña Moodle:</strong> {{ session('moodleUserData')['moodle_pass'] }}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" data-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Formulario de búsqueda y filtrado -->
     <form action="{{ route('admin.users.index') }}" method="GET" class="form-inline mb-3 px-2.5">
         <div class="form-group mr-2">
@@ -53,4 +75,14 @@
 
     <!-- Paginación -->
     <x-pagination :paginator="$users" />
+@stop
+
+@section('js')
+    @if (session('moodleUserData'))
+        <script>
+            $(document).ready(function() {
+                $('#moodleUserModal').modal('show');
+            });
+        </script>
+    @endif
 @stop
