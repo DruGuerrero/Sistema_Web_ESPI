@@ -23,7 +23,7 @@
             </div>
         @endforeach
     </div>
-    <a href="{{ route('admin.academic.index') }}" class="btn btn-secondary">Volver</a>
+    <a href="{{ route('admin.academic.index') }}" class="btn btn-primary">Volver</a>
 @stop
 
 @section('js')
