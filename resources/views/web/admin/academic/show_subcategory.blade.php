@@ -19,7 +19,7 @@
         </div>
         <div>
             <span>{{ $studentsCount }} estudiantes</span>
-            <a href="#" class="btn btn-primary">Agregar curso</a>
+            <a href="{{ route('admin.academic.create_course', ['subcategory_id' => $subcategory['id']]) }}" class="btn btn-primary mb-3">Agregar curso</a>
         </div>
     </div>
     <div class="row">

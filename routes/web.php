@@ -34,5 +34,7 @@ Route::get('Panel-Administrativo', [indexController::class, 'index'])->name('das
         Route::post('academic', [AcademicManagementController::class, 'store'])->name('admin.academic.store');
         Route::get('academic/{id}', [AcademicManagementController::class, 'show'])->name('admin.academic.show');
         Route::get('academic/subcategory/{id}', [AcademicManagementController::class, 'showSubCategory'])->name('admin.academic.show_subcategory')->middleware('moodle.permission');
+        Route::get('academic/create_course/{subcategory_id}', [AcademicManagementController::class, 'createCourse'])->name('admin.academic.create_course');
+        Route::post('academic/store_course', [AcademicManagementController::class, 'storeCourse'])->name('admin.academic.store_course');
     });
 });

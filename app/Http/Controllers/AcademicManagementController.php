@@ -360,4 +360,123 @@ class AcademicManagementController extends Controller
             'parentCategoryId' => $subcategoryData['parentCategoryId']
         ]);
     }
+    public function createCourse($subcategory_id)
+    {
+        $apikey = Config::get('app.moodle_api_key_crear_cursos');
+
+        // Obtener lista de usuarios
+        $usersResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_get_users'
+            . '&wstoken=' . urldecode($apikey)
+            . '&criteria[0][key]=firstname'
+            . '&criteria[0][value]=%'
+        );
+    
+        if ($usersResponse->failed()) {
+            Log::error('Error obteniendo lista de usuarios de Moodle: ' . $usersResponse->body());
+            return redirect()->back()->withErrors(['error' => 'Error obteniendo lista de usuarios de Moodle']);
+        }
+    
+        $response = $usersResponse->json();
+        Log::info('Respuesta de Moodle para usuarios:', $response);
+    
+        if (!isset($response['users']) || empty($response['users'])) {
+            return redirect()->back()->withErrors(['error' => 'No se encontraron usuarios.']);
+        }
+    
+        // Filtrar los usuarios cuyo nombre de usuario comienza con "doc"
+        $teachers = array_filter($response['users'], function ($user) {
+            return strpos($user['username'], 'doc') === 0;
+        });
+    
+        return view('web.admin.academic.create_course', compact('teachers', 'subcategory_id'));
+    }
+    
+    public function storeCourse(Request $request)
+    {
+        $apikey = Config::get('app.moodle_api_key_crear_cursos');
+
+        $request->validate([
+            'fullname' => 'required|string|max:255',
+            'description' => 'required|string',
+            'image' => 'required|file|mimes:jpg,jpeg,png|max:2048', // Asegurarse de que el tamaño del archivo sea razonable
+            'teacher' => 'required|integer',
+        ]);
+
+        $subcategory_id = $request->input('subcategory_id');
+        $fullname = $request->input('fullname');
+        $shortname = substr($fullname, 0, 4) . $subcategory_id;
+        $summary = $request->input('description');
+
+        // Subir imagen al área de borradores de Moodle
+        $image = $request->file('image');
+        $filename = $image->getClientOriginalName();
+        $filecontent = file_get_contents($image);
+
+        // Subir la imagen utilizando una solicitud multipart/form-data
+        $uploadResponse = Http::attach('file', $filecontent, $filename)->post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_files_upload', [
+            'wstoken' => urldecode($apikey),
+            'contextlevel' => 'user',
+            'instanceid' => 2, // Generalmente el ID del usuario en Moodle
+            'component' => 'user',
+            'filearea' => 'draft',
+            'itemid' => 0,
+            'filepath' => '/',
+            'filename' => $filename,
+            'filecontent' => base64_encode($filecontent) // Incluir el contenido del archivo en base64
+        ]);
+
+        if ($uploadResponse->failed()) {
+            Log::error('Error subiendo imagen a Moodle: ' . $uploadResponse->body());
+            return redirect()->back()->withErrors(['error' => 'Error subiendo imagen a Moodle']);
+        }
+
+        // Registrar el contenido de la respuesta para depuración
+        Log::info('Respuesta de subida de imagen a Moodle:', $uploadResponse->json());
+
+        // Ajustar la forma de acceder a los datos de la respuesta
+        $uploadedFile = $uploadResponse->json();
+        if (!isset($uploadedFile['itemid'])) {
+            return redirect()->back()->withErrors(['error' => 'Error al obtener la referencia del archivo subido']);
+        }
+
+        $draftItemId = $uploadedFile['itemid'];
+
+        // Crear curso en Moodle
+        $createCourseResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_create_courses'
+            . '&wstoken=' . urldecode($apikey)
+            . '&courses[0][fullname]=' . urlencode($fullname)
+            . '&courses[0][shortname]=' . urlencode($shortname)
+            . '&courses[0][categoryid]=' . $subcategory_id
+            . '&courses[0][summary]=' . urlencode($summary)
+            . '&courses[0][summaryformat]=2'
+            . '&courses[0][maxbytes]=20971520'
+            . '&courses[0][courseformatoptions][0][name]=courseimage'
+            . '&courses[0][courseformatoptions][0][value]=' . urlencode($draftItemId)
+        );
+
+        if ($createCourseResponse->failed()) {
+            Log::error('Error creando curso en Moodle: ' . $createCourseResponse->body());
+            return redirect()->back()->withErrors(['error' => 'Error creando curso en Moodle']);
+        }
+
+        $course = $createCourseResponse->json()[0];
+        $courseId = $course['id'];
+
+        // Asignar docente al curso
+        $teacherId = $request->input('teacher');
+
+        $enrollResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=enrol_manual_enrol_users'
+            . '&wstoken=' . urldecode($apikey)
+            . '&enrolments[0][roleid]=3'
+            . '&enrolments[0][userid]=' . $teacherId
+            . '&enrolments[0][courseid]=' . $courseId
+        );
+
+        if ($enrollResponse->failed()) {
+            Log::error('Error asignando docente al curso en Moodle: ' . $enrollResponse->body());
+            return redirect()->back()->withErrors(['error' => 'Error asignando docente al curso en Moodle']);
+        }
+
+        return redirect()->route('admin.academic.show_subcategory', ['id' => $subcategory_id])->with('success', 'Curso creado exitosamente.');
+    }
 }
