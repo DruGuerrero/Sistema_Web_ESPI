@@ -264,7 +264,7 @@ class AcademicManagementController extends Controller
 
         // Intentar obtener de la caché primero
         $cacheKey = "moodle_subcategory_$id";
-        $cacheDuration = 60; // Cache duration in minutes
+        $cacheDuration = 1; // Cache duration in minutes
 
         $subcategoryData = Cache::remember($cacheKey, $cacheDuration, function () use ($apikey, $id) {
             // Obtener la subcategoría
