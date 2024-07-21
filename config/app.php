@@ -7,6 +7,7 @@ return [
 
     'moodle_api_key_matricular' => env('MOODLE_API_KEY_MATRICULAR', null),
     'moodle_api_key_detalles_categorias' => env('MOODLE_API_KEY_GET_CATEGORIES_DETAILS', null),
+    'moodle_api_key_crear_cursos' => env('MOODLE_API_KEY_CREATE_COURSES', null),
 
     /*
     |--------------------------------------------------------------------------
