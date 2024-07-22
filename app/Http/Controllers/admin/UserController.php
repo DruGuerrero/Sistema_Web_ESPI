@@ -78,28 +78,27 @@ class UserController extends Controller
             'password.regex' => 'La contraseña debe contener al menos un número, una mayúscula, una minúscula o un caracter especial',
             'password.confirmed' => 'La contraseña no es igual a la ingresada.',
         ]);
-    
+
+        $nameParts = explode(' ', $request->name, 2);
+        $firstname = $nameParts[0];
+        $lastname = isset($nameParts[1]) ? $nameParts[1] : '';
+        $emailPrefix = explode('@', $request->email)[0];
+        $rolePrefix = substr(strtolower($request->role), 0, 3);
+        $moodleUser = $rolePrefix . $emailPrefix;
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
+            'moodleuser' => $moodleUser,
         ]);
-    
+
         try {
-            // Extraer firstname y lastname del campo name
-            $nameParts = explode(' ', $request->name, 2);
-            $firstname = $nameParts[0];
-            $lastname = isset($nameParts[1]) ? $nameParts[1] : '';
-    
             // Crear usuario en Moodle
-            $emailPrefix = explode('@', $request->email)[0];
-            $rolePrefix = substr(strtolower($request->role), 0, 3);
-            $moodleUser = $rolePrefix . $emailPrefix;
             $moodlePass = $request->password;
-    
             $apikey = Config::get('app.moodle_api_key_matricular');
-    
+
             $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_create_users'
                 . '&wstoken=' . urldecode($apikey)
                 . '&users[0][username]=' . urlencode($moodleUser)
@@ -111,7 +110,7 @@ class UserController extends Controller
                 . '&users[0][idnumber]=' . urlencode($user->id)
                 . '&users[0][lang]=es'
             );
-    
+
             Log::info('Solicitud a Moodle: ', ['request' => [
                 'username' => $moodleUser,
                 'password' => $moodlePass,
@@ -119,25 +118,23 @@ class UserController extends Controller
                 'lastname' => $lastname,
                 'email' => $request->email,
             ], 'response' => $response->body()]);
-    
+
             if ($response->failed()) {
                 Log::error('Error creando usuario en Moodle: ' . $response->body());
                 return redirect()->route('admin.users.index')->with('error', 'Error creando usuario en Moodle.');
             }
-    
-            // Pasar los datos del usuario Moodle a la vista
+
             $moodleUserData = [
                 'moodle_user' => $moodleUser,
                 'moodle_pass' => $moodlePass,
             ];
-    
+
             return redirect()->route('admin.users.index')->with('success', 'Usuario creado exitosamente.')->with('moodleUserData', $moodleUserData);
         } catch (\Exception $e) {
             Log::error('Error creando usuario en Moodle: ' . $e->getMessage());
             return redirect()->route('admin.users.index')->with('error', 'Error creando usuario en Moodle.');
         }
-    }    
-
+    }
     public function edit(User $user)
     {
         return view('web.admin.users.edit', compact('user'));

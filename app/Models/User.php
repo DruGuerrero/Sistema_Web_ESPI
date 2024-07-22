@@ -27,6 +27,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'moodleuser',
         'role',
         'disabled',
     ];
@@ -66,4 +67,9 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
+    // Relación uno a uno con el modelo Course
+    public function course()
+    {
+        return $this->hasOne(Course::class, 'id_docente');
+    }
 }
