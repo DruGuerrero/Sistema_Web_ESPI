@@ -15,7 +15,7 @@ class AcademicManagementController extends Controller
         $apikey = Config::get('app.moodle_api_key_detalles_categorias');
     
         // Intentar obtener de la caché primero
-        $careers = Cache::remember('moodle_careers', 60, function () use ($apikey) {
+        $careers = Cache::remember('moodle_careers', 60*60, function () use ($apikey) {
             $careers = [];
     
             // Obtener categorías padre
@@ -157,7 +157,7 @@ class AcademicManagementController extends Controller
 
         // Intentar obtener de la caché primero
         $cacheKey = "moodle_category_$id";
-        $cacheDuration = 60; // Cache duration in minutes
+        $cacheDuration = 60*60; // Cache duration in minutes
 
         $categoryData = Cache::remember($cacheKey, $cacheDuration, function () use ($apikey, $id) {
             // Obtener la categoría padre
@@ -264,7 +264,7 @@ class AcademicManagementController extends Controller
 
         // Intentar obtener de la caché primero
         $cacheKey = "moodle_subcategory_$id";
-        $cacheDuration = 1; // Cache duration in minutes
+        $cacheDuration = 60*60; // Cache duration in minutes
 
         $subcategoryData = Cache::remember($cacheKey, $cacheDuration, function () use ($apikey, $id) {
             // Obtener la subcategoría
