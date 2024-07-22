@@ -33,6 +33,6 @@ class Student extends Model
 
     public function mediaFiles()
     {
-        return $this->hasMany(MediaFile::class);
+        return $this->hasMany(MediaFile::class, 'student_id');
     }
 }

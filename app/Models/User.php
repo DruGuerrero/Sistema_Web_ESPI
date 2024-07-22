@@ -67,9 +67,9 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
-    // Relación uno a uno con el modelo Course
-    public function course()
+    // Relación uno a muchos con Course (un docente puede estar asignado a varios cursos)
+    public function courses()
     {
-        return $this->hasOne(Course::class, 'id_docente');
+        return $this->hasMany(Course::class, 'id_docente');
     }
 }
