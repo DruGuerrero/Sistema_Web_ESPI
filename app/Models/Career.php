@@ -12,6 +12,8 @@ class Career extends Model
     protected $fillable = [
         'nombre',
         'descripcion',
+        'cant_estudiantes',
+        'id_moodle',
     ];
 
     // Relación uno a muchos con Year

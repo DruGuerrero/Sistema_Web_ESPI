@@ -9,18 +9,18 @@
     </div>
     @endif
 
-    <p class="mt-2 text-gray-500 text-justify">
+    <p class="mt-2 text-gray-500 items-center justify-center text-center">
         {{ $content }}
     </p>
 
     <div class="mt-2 text-gray-500 space-y-2">
         @foreach ($contentBlocks as $block)
             @if(is_array($block))
-                <div class="flex items-center">
-                    <div class="flex items-center justify-center bg-blue-100 border border-blue-500 text-black rounded-lg py-1 px-2 mr-2 w-32 h-10">
+                <div class="flex items-center justify-center">
+                    <div class="flex items-center justify-center bg-blue-100 border border-blue-500 text-black rounded-lg py-1 px-2 w-auto h-auto">
                         {{ $block['name'] }}
                     </div>
-                    <span>{{ $block['professor'] }}</span>
+                    <span class="px-2">{{ $block['professor'] }}</span>
                 </div>
             @endif
         @endforeach

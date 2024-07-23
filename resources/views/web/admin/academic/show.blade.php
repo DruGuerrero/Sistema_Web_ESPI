@@ -1,33 +1,34 @@
 @extends('adminlte::page')
 
-@section('title', $category['name'])
+@section('title', $career->nombre)
 
 @section('content_header')
     @vite(['resources/css/app.css','resources/js/app.js'])
-    <h1>{{ $category['name'] }}</h1>
-    <hr>
+    <div class="d-flex justify-content-between">
+        <h1>{{ $career->nombre }}</h1>
+        <a href="{{ route('admin.academic.create_year', ['career_id' => $career->id]) }}" class="btn btn-primary mb-3">Agregar año académico</a>
+    </div>
 @stop
 
 @section('content')
-    <p class="py-0.5">{{ strip_tags($category['description']) }}</p>
+    <p class="py-0.5">{{ strip_tags($career->descripcion) }}</p>
     <div class="row">
-        @foreach($subCategories as $subCategory)
+        @foreach($career->years as $year)
             <div class="col-md-6 mb-4">
                 <x-advanced-card
-                    title="{{ $subCategory['name'] }}"
-                    content="{{ strip_tags($subCategory['description']) }}"
-                    :contentBlocks="$coursesAndProfessors[$subCategory['id']] ?? []"
+                    title="{{ $year->nombre }}"
+                    content="{{ strip_tags($year->descripcion) }}"
+                    :contentBlocks="$year->courses->map(function($course) {
+                        return [
+                            'name' => $course->nombre,
+                            'professor' => $course->docente->name,
+                        ];
+                    })->toArray()"
                     leftButtonLink="#"
-                    rightButtonLink="{{ route('admin.academic.show_subcategory', ['id' => $subCategory['id']]) }}"
+                    rightButtonLink="{{ route('admin.academic.show_subcategory', ['id' => $year->id]) }}"
                 />
             </div>
         @endforeach
     </div>
     <a href="{{ route('admin.academic.index') }}" class="btn btn-primary">Volver</a>
-@stop
-
-@section('js')
-    <script>
-        console.log(@json($coursesAndProfessors));
-    </script>
 @stop

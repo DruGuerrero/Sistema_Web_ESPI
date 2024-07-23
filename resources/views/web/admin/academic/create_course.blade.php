@@ -35,8 +35,8 @@
         <div class="form-group">
             <label for="teacher">Docente:</label>
             <select name="teacher" class="form-control" required>
-                @foreach($teachers as $teacher)
-                    <option value="{{ $teacher['id'] }}">{{ $teacher['fullname'] }} ({{ $teacher['username'] }})</option>
+                @foreach($dbTeachers as $teacher)
+                    <option value="{{ $teacher->id }}">{{ $teacher->name }} ({{ $teacher->moodleuser }})</option>
                 @endforeach
             </select>
         </div>

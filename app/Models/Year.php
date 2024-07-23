@@ -13,6 +13,8 @@ class Year extends Model
         'nombre',
         'descripcion',
         'id_career',
+        'cant_estudiantes',
+        'id_moodle',
     ];
 
     // Relación uno a muchos con Course

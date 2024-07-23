@@ -14,6 +14,7 @@ class Course extends Model
         'descripcion',
         'id_docente',
         'id_year',
+        'id_moodle',
     ];
 
     // Relación uno a uno con MediaFile (un curso puede tener un archivo y un archivo pertenece a un curso)

@@ -7,112 +7,22 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Career;
+use App\Models\Year;
+use App\Models\Course;
+use App\Models\MediaFile;
+use App\Models\User;
 
 class AcademicManagementController extends Controller
 {
     public function index()
     {
-        $apikey = Config::get('app.moodle_api_key_detalles_categorias');
-    
-        // Intentar obtener de la caché primero
-        $careers = Cache::remember('moodle_careers', 1, function () use ($apikey) {
-            $careers = [];
-    
-            // Obtener categorías padre
-            $categoriesResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_get_categories'
-                . '&wstoken=' . urldecode($apikey)
-                . '&criteria[0][key]=parent'
-                . '&criteria[0][value]=0'
-            );
-    
-            if ($categoriesResponse->failed()) {
-                Log::error('Error obteniendo categorías de Moodle: ' . $categoriesResponse->body());
-                return []; // Retornar un array vacío en caso de error
-            }
-    
-            $categories = $categoriesResponse->json();
-    
-            foreach ($categories as $category) {
-                if ($category['parent'] != 0) {
-                    continue; // Asegurarse de que solo se procesan las categorías padre
-                }
-                
-                $categoryId = $category['id'];
-                $categoryName = $category['name'];
-                $categoryDescription = strip_tags($category['description']); // Eliminar etiquetas HTML
-    
-                // Inicializar el total de estudiantes
-                $totalStudents = 0;
-    
-                // Obtener categorías hijo
-                $subCategoriesResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_get_categories'
-                    . '&wstoken=' . urldecode($apikey)
-                    . '&criteria[0][key]=parent'
-                    . '&criteria[0][value]=' . $categoryId
-                );
-    
-                if ($subCategoriesResponse->failed()) {
-                    Log::error('Error obteniendo subcategorías de Moodle: ' . $subCategoriesResponse->body());
-                    continue; // Saltar esta categoría padre en caso de error
-                }
-    
-                $subCategories = $subCategoriesResponse->json();
-    
-                // Procesar cada subcategoría para contar los estudiantes
-                $uniqueStudents = collect(); // Usamos una colección para asegurar la unicidad de los estudiantes
-                foreach ($subCategories as $subCategory) {
-                    // Obtener cursos por subcategoría
-                    $coursesResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_get_courses_by_field'
-                        . '&wstoken=' . urldecode($apikey)
-                        . '&field=category'
-                        . '&value=' . $subCategory['id']
-                    );
-    
-                    if ($coursesResponse->failed()) {
-                        Log::error('Error obteniendo cursos de Moodle: ' . $coursesResponse->body());
-                        continue; // Saltar esta subcategoría en caso de error
-                    }
-    
-                    $courses = $coursesResponse->json()['courses'];
-    
-                    // Contar estudiantes matriculados en cada curso
-                    foreach ($courses as $course) {
-                        $courseId = $course['id'];
-                        $enrolledUsersResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_enrol_get_enrolled_users'
-                            . '&wstoken=' . urldecode($apikey)
-                            . '&courseid=' . $courseId
-                        );
-    
-                        if ($enrolledUsersResponse->failed()) {
-                            Log::error('Error obteniendo estudiantes matriculados en Moodle: ' . $enrolledUsersResponse->body());
-                            continue; // Saltar este curso en caso de error
-                        }
-    
-                        $enrolledUsers = $enrolledUsersResponse->json();
-                        $uniqueStudents = $uniqueStudents->merge($enrolledUsers)->unique('id');
-                    }
-                }
-    
-                $totalStudents = $uniqueStudents->count();
-    
-                // Solo agregar la categoría padre al array de carreras
-                $careers[] = [
-                    'id' => $categoryId, // Incluyendo el id aquí
-                    'name' => $categoryName,
-                    'students' => $totalStudents,
-                    'description' => $categoryDescription,
-                ];
-    
-                Log::info('Parent category added: ' . $categoryName);
-            }
-    
-            return $careers; 
-        });
-    
+        // Obtener las carreras desde la base de datos
+        $careers = Career::all();
+
         return view('web.admin.academic.index', compact('careers'));
     }
     
-
     public function create()
     {
         return view('web.admin.academic.create');
@@ -139,256 +49,145 @@ class AcademicManagementController extends Controller
             . '&categories[0][descriptionformat]=2' // PLAIN
         );
 
+        Log::info($response->body());
+
         if ($response->failed()) {
             Log::error('Error creando categoría en Moodle: ' . $response->body());
             return redirect()->back()->withErrors(['error' => 'Error creando categoría en Moodle']);
         }
 
-        Log::info('Respuesta de Moodle: ' . $response->body());
+        $moodleCategory = $response->json()[0];
+        $moodleCategoryId = $moodleCategory['id'];
+
+        // Crear carrera en la base de datos con el ID de Moodle
+        Career::create([
+            'nombre' => $request->input('name'),
+            'descripcion' => $request->input('description'),
+            'cant_estudiantes' => 0, // Valor por defecto
+            'id_moodle' => $moodleCategoryId,
+        ]);
 
         // Limpiar caché para actualizar la lista de categorías
         Cache::forget('moodle_careers');
 
         return redirect()->route('admin.academic.index')->with('success', 'Carrera creada exitosamente.');
     }
+
     public function show($id)
     {
-        $apikey = Config::get('app.moodle_api_key_detalles_categorias');
+        // Obtener la carrera desde la base de datos con sus años y cursos
+        $career = Career::with('years.courses.docente')->findOrFail($id);
 
-        // Intentar obtener de la caché primero
-        $cacheKey = "moodle_category_$id";
-        $cacheDuration = 1; // Cache duration in minutes
-
-        $categoryData = Cache::remember($cacheKey, $cacheDuration, function () use ($apikey, $id) {
-            // Obtener la categoría padre
-            $categoryResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_get_categories'
-                . '&wstoken=' . urldecode($apikey)
-                . '&criteria[0][key]=id'
-                . '&criteria[0][value]=' . $id
-            );
-
-            if ($categoryResponse->failed()) {
-                Log::error('Error obteniendo categoría de Moodle: ' . $categoryResponse->body());
-                abort(404, 'Carrera no encontrada');
-            }
-
-            $category = $categoryResponse->json()[0];
-
-            // Obtener categorías hijo
-            $subCategoriesResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_get_categories'
-                . '&wstoken=' . urldecode($apikey)
-                . '&criteria[0][key]=parent'
-                . '&criteria[0][value]=' . $id
-            );
-
-            if ($subCategoriesResponse->failed()) {
-                Log::error('Error obteniendo subcategorías de Moodle: ' . $subCategoriesResponse->body());
-                $subCategories = [];
-            } else {
-                $subCategories = $subCategoriesResponse->json();
-            }
-
-            // Obtener detalles de los cursos y profesores
-            $coursesAndProfessors = [];
-            foreach ($subCategories as $subCategory) {
-                $coursesResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_get_courses_by_field'
-                    . '&wstoken=' . urldecode($apikey)
-                    . '&field=category'
-                    . '&value=' . $subCategory['id']
-                );
-
-                if ($coursesResponse->failed()) {
-                    Log::error('Error obteniendo cursos de Moodle: ' . $coursesResponse->body());
-                    continue;
-                }
-
-                $courses = $coursesResponse->json()['courses'];
-
-                // Inicializar el array de cursos y profesores por subcategoría
-                $subCategoryCoursesAndProfessors = [];
-                
-                foreach ($courses as $course) {
-                    $courseId = $course['id'];
-                    $professors = [];
-
-                    // Obtener usuarios matriculados en el curso
-                    $enrolledUsersResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_enrol_get_enrolled_users'
-                        . '&wstoken=' . urldecode($apikey)
-                        . '&courseid=' . $courseId
-                    );
-
-                    if ($enrolledUsersResponse->failed()) {
-                        Log::error('Error obteniendo usuarios matriculados de Moodle: ' . $enrolledUsersResponse->body());
-                        continue;
-                    }
-
-                    $enrolledUsers = $enrolledUsersResponse->json();
-
-                    // Filtrar solo los usuarios con rol de profesor (id de rol 3 es comúnmente el rol de profesor en Moodle)
-                    foreach ($enrolledUsers as $user) {
-                        if (isset($user['roles'])) {
-                            foreach ($user['roles'] as $role) {
-                                if ($role['roleid'] == 3) { // Verificar si el roleid coincide con el de profesor
-                                    $professors[] = $user['fullname'];
-                                }
-                            }
-                        }
-                    }
-
-                    $subCategoryCoursesAndProfessors[] = [
-                        'name' => $course['fullname'],
-                        'professor' => implode(', ', $professors) // Unir los nombres de los profesores en una cadena
-                    ];
-                }
-
-                // Añadir los cursos y profesores agrupados por subcategoría
-                $coursesAndProfessors[$subCategory['id']] = $subCategoryCoursesAndProfessors;
-            }
-
-            return [
-                'category' => $category,
-                'subCategories' => $subCategories,
-                'coursesAndProfessors' => $coursesAndProfessors
-            ];
-        });
-
-        return view('web.admin.academic.show', [
-            'category' => $categoryData['category'],
-            'subCategories' => $categoryData['subCategories'],
-            'coursesAndProfessors' => $categoryData['coursesAndProfessors']
-        ]);
+        return view('web.admin.academic.show', compact('career'));
     }
-    public function showSubcategory($id)
+
+    public function createYear($career_id)
+    {
+        return view('web.admin.academic.create_year', compact('career_id'));
+    }
+
+    public function storeYear(Request $request)
     {
         $apikey = Config::get('app.moodle_api_key_detalles_categorias');
 
-        // Intentar obtener de la caché primero
-        $cacheKey = "moodle_subcategory_$id";
-        $cacheDuration = 1; // Cache duration in minutes
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+            'career_id' => 'required|exists:careers,id',
+        ]);
 
-        $subcategoryData = Cache::remember($cacheKey, $cacheDuration, function () use ($apikey, $id) {
-            // Obtener la subcategoría
-            $subcategoryResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_get_categories'
-                . '&wstoken=' . urldecode($apikey)
-                . '&criteria[0][key]=id'
-                . '&criteria[0][value]=' . $id
-            );
+        $name = urlencode($request->input('name'));
+        $description = urlencode($request->input('description'));
+        $career_id = $request->input('career_id');
 
-            if ($subcategoryResponse->failed()) {
-                Log::error('Error obteniendo subcategoría de Moodle: ' . $subcategoryResponse->body());
-                abort(404, 'Año académico no encontrado');
-            }
+        // Obtener la carrera desde la base de datos
+        $career = Career::findOrFail($career_id);
 
-            $subcategory = $subcategoryResponse->json()[0];
-            $parentCategoryId = $subcategory['parent'];
+        // Crear categoría en Moodle
+        $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_create_categories'
+            . '&wstoken=' . urldecode($apikey)
+            . '&categories[0][name]=' . $name
+            . '&categories[0][parent]=' . $career->id_moodle // Categoría padre es la carrera en Moodle
+            . '&categories[0][description]=' . $description
+            . '&categories[0][descriptionformat]=2' // PLAIN
+        );
 
-            // Obtener los cursos de la subcategoría
-            $coursesResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_get_courses_by_field'
-                . '&wstoken=' . urldecode($apikey)
-                . '&field=category'
-                . '&value=' . $id
-            );
+        if ($response->failed()) {
+            Log::error('Error creando subcategoría en Moodle: ' . $response->body());
+            return redirect()->back()->withErrors(['error' => 'Error creando subcategoría en Moodle']);
+        }
 
-            if ($coursesResponse->failed()) {
-                Log::error('Error obteniendo cursos de Moodle: ' . $coursesResponse->body());
-                $courses = [];
-            } else {
-                $courses = $coursesResponse->json()['courses'];
-            }
+        $moodleSubCategory = $response->json()[0];
+        $moodleSubCategoryId = $moodleSubCategory['id'];
 
-            // Obtener detalles de los cursos y profesores
-            $coursesAndProfessors = [];
-            $uniqueStudents = [];
+        // Crear año académico en la base de datos con el ID de Moodle
+        Year::create([
+            'nombre' => $request->input('name'),
+            'descripcion' => $request->input('description'),
+            'id_career' => $career_id,
+            'cant_estudiantes' => 0, // Valor por defecto
+            'id_moodle' => $moodleSubCategoryId,
+        ]);
+        $year = Career::findOrFail($career_id);
 
-            foreach ($courses as $course) {
-                $courseId = $course['id'];
-                $professors = [];
+        Log::info('Se creo el año con ID: ' . $moodleSubCategoryId . ', nombre: ' . $name . ' y categoria padre con ID: ' . $career->id_moodle);
 
-                // Obtener usuarios matriculados en el curso
-                $enrolledUsersResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_enrol_get_enrolled_users'
-                    . '&wstoken=' . urldecode($apikey)
-                    . '&courseid=' . $courseId
-                );
+        return redirect()->route('admin.academic.show', ['id' => $career_id])->with('success', 'Año académico creado exitosamente.');
+    }
 
-                if ($enrolledUsersResponse->failed()) {
-                    Log::error('Error obteniendo usuarios matriculados de Moodle: ' . $enrolledUsersResponse->body());
-                    continue;
-                }
+    public function showSubCategory($id)
+    {
+        // Obtener el año académico
+        $year = Year::with('courses.docente')->findOrFail($id);
 
-                $enrolledUsers = $enrolledUsersResponse->json();
-
-                // Filtrar solo los usuarios con rol de profesor (id de rol 3 es comúnmente el rol de profesor en Moodle)
-                foreach ($enrolledUsers as $user) {
-                    $uniqueStudents[$user['id']] = $user['id']; // Asegurarse de que los IDs de los estudiantes son únicos
-                    if (isset($user['roles'])) {
-                        foreach ($user['roles'] as $role) {
-                            if ($role['roleid'] == 3) { // Verificar si el roleid coincide con el de profesor
-                                $professors[] = $user['fullname'];
-                            }
-                        }
-                    }
-                }
-
-                // Construir URL completa de la imagen del curso
-                $courseImage = $course['courseimage'];
-
-                Log::info('Course Image URL: ' . $courseImage);
-
-                $coursesAndProfessors[] = [
-                    'name' => $course['fullname'],
-                    'image' => $courseImage, // Usar URL completa
-                    'professor' => implode(', ', $professors),
-                    'description' => strip_tags($course['summary']) // Asumiendo que 'summary' es el campo que contiene la descripción del curso
-                ];
-            }
-
-            $uniqueStudentsCount = count($uniqueStudents);
-            Log::info('Courses and Professors Data: ', $coursesAndProfessors);
+        // Obtener los cursos asociados al año académico
+        $courses = $year->courses->map(function($course) {
+            // Obtener la imagen del curso desde la tabla media_files
+            $mediaFile = MediaFile::where('id_course', $course->id)->first();
+            $imageUrl = $mediaFile ? asset('storage/' . $mediaFile->file) : null;
 
             return [
-                'subcategory' => $subcategory,
-                'coursesAndProfessors' => $coursesAndProfessors,
-                'studentsCount' => $uniqueStudentsCount,
-                'parentCategoryId' => $parentCategoryId
+                'name' => $course->nombre,
+                'description' => $course->descripcion,
+                'professor' => $course->docente->name,
+                'image' => $imageUrl,
             ];
         });
 
-        return view('web.admin.academic.show_subcategory', [
-            'subcategory' => $subcategoryData['subcategory'],
-            'coursesAndProfessors' => $subcategoryData['coursesAndProfessors'],
-            'studentsCount' => $subcategoryData['studentsCount'],
-            'parentCategoryId' => $subcategoryData['parentCategoryId']
-        ]);
+        return view('web.admin.academic.show_subcategory', compact('year', 'courses'));
     }
+    
     public function createCourse($subcategory_id)
     {
         $apikey = Config::get('app.moodle_api_key_crear_cursos');
 
-        // Obtener lista de usuarios
+        // Obtener lista de todos los usuarios de Moodle
         $usersResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_get_users'
             . '&wstoken=' . urldecode($apikey)
             . '&criteria[0][key]=firstname'
             . '&criteria[0][value]=%'
         );
-    
+
         if ($usersResponse->failed()) {
             Log::error('Error obteniendo lista de usuarios de Moodle: ' . $usersResponse->body());
             return redirect()->back()->withErrors(['error' => 'Error obteniendo lista de usuarios de Moodle']);
         }
-    
+
         $response = $usersResponse->json();
-        Log::info('Respuesta de Moodle para usuarios:', $response);
-    
+
         if (!isset($response['users']) || empty($response['users'])) {
-            return redirect()->back()->withErrors(['error' => 'No se encontraron usuarios.']);
+            return redirect()->back()->withErrors(['error' => 'No se encontraron usuarios en Moodle.']);
         }
-    
+
         // Filtrar los usuarios cuyo nombre de usuario comienza con "doc"
-        $teachers = array_filter($response['users'], function ($user) {
+        $moodleTeachers = array_filter($response['users'], function ($user) {
             return strpos($user['username'], 'doc') === 0;
         });
-    
-        return view('web.admin.academic.create_course', compact('teachers', 'subcategory_id'));
+
+        // Obtener lista de usuarios con el rol "Docente" desde la base de datos
+        $dbTeachers = User::where('role', 'Docente')->get();
+
+        return view('web.admin.academic.create_course', compact('moodleTeachers', 'dbTeachers', 'subcategory_id'));
     }
     
     public function storeCourse(Request $request)
@@ -402,44 +201,33 @@ class AcademicManagementController extends Controller
             'teacher' => 'required|integer',
         ]);
 
-        $subcategory_id = $request->input('subcategory_id');
+        $yearId = $request->input('subcategory_id');
         $fullname = $request->input('fullname');
-        $shortname = substr($fullname, 0, 4) . $subcategory_id;
+        $shortname = substr($fullname, 0, 4) . $yearId;
         $summary = $request->input('description');
+        $teacherId = $request->input('teacher');
 
-        // Subir imagen al área de borradores de Moodle
-        $image = $request->file('image');
-        $filename = $image->getClientOriginalName();
-        $filecontent = file_get_contents($image);
+        // Obtener el año académico desde la base de datos
+        $year = Year::findOrFail($yearId);
+        $subcategory_id = $year->id_moodle;
 
-        // Subir la imagen utilizando una solicitud multipart/form-data
-        $uploadResponse = Http::attach('file', $filecontent, $filename)->post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_files_upload', [
-            'wstoken' => urldecode($apikey),
-            'contextlevel' => 'user',
-            'instanceid' => 2, // Generalmente el ID del usuario en Moodle
-            'component' => 'user',
-            'filearea' => 'draft',
-            'itemid' => 0,
-            'filepath' => '/',
-            'filename' => $filename,
-            'filecontent' => base64_encode($filecontent) // Incluir el contenido del archivo en base64
-        ]);
+        // Registrar el ID de la subcategoría para depuración
+        Log::info('Intentando crear un curso en la subcategoría de Moodle con ID: ' . $subcategory_id);
 
-        if ($uploadResponse->failed()) {
-            Log::error('Error subiendo imagen a Moodle: ' . $uploadResponse->body());
-            return redirect()->back()->withErrors(['error' => 'Error subiendo imagen a Moodle']);
+        // Verificar si la subcategoría existe en Moodle
+        $checkCategoryResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_get_categories'
+            . '&wstoken=' . urldecode($apikey)
+            . '&criteria[0][key]=id'
+            . '&criteria[0][value]=' . $subcategory_id
+        );
+
+        if ($checkCategoryResponse->failed() || empty($checkCategoryResponse->json())) {
+            Log::error('La subcategoría especificada no existe en Moodle o no se pudo verificar: ' . $checkCategoryResponse->body());
+            return redirect()->back()->withErrors(['error' => 'La subcategoría especificada no existe en Moodle o no se pudo verificar.']);
         }
 
-        // Registrar el contenido de la respuesta para depuración
-        Log::info('Respuesta de subida de imagen a Moodle:', $uploadResponse->json());
-
-        // Ajustar la forma de acceder a los datos de la respuesta
-        $uploadedFile = $uploadResponse->json();
-        if (!isset($uploadedFile['itemid'])) {
-            return redirect()->back()->withErrors(['error' => 'Error al obtener la referencia del archivo subido']);
-        }
-
-        $draftItemId = $uploadedFile['itemid'];
+        // Obtener el usuario docente desde la base de datos
+        $teacher = User::findOrFail($teacherId);
 
         // Crear curso en Moodle
         $createCourseResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_create_courses'
@@ -450,8 +238,6 @@ class AcademicManagementController extends Controller
             . '&courses[0][summary]=' . urlencode($summary)
             . '&courses[0][summaryformat]=2'
             . '&courses[0][maxbytes]=20971520'
-            . '&courses[0][courseformatoptions][0][name]=courseimage'
-            . '&courses[0][courseformatoptions][0][value]=' . urlencode($draftItemId)
         );
 
         if ($createCourseResponse->failed()) {
@@ -459,16 +245,37 @@ class AcademicManagementController extends Controller
             return redirect()->back()->withErrors(['error' => 'Error creando curso en Moodle']);
         }
 
-        $course = $createCourseResponse->json()[0];
+        $courseResponseBody = $createCourseResponse->json();
+        Log::info('Respuesta de creación de curso en Moodle:', $courseResponseBody);
+
+        if (!isset($courseResponseBody[0])) {
+            return redirect()->back()->withErrors(['error' => 'Respuesta inesperada de Moodle al crear curso.']);
+        }
+
+        $course = $courseResponseBody[0];
         $courseId = $course['id'];
 
-        // Asignar docente al curso
-        $teacherId = $request->input('teacher');
+        // Obtener el id del usuario en Moodle utilizando su username (moodleuser)
+        $getUserResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_get_users'
+            . '&wstoken=' . urldecode($apikey)
+            . '&criteria[0][key]=username'
+            . '&criteria[0][value]=' . urlencode($teacher->moodleuser)
+        );
 
+        if ($getUserResponse->failed() || empty($getUserResponse->json()['users'])) {
+            Log::error('Error obteniendo el ID del usuario en Moodle: ' . $getUserResponse->body());
+            return redirect()->back()->withErrors(['error' => 'Error obteniendo el ID del usuario en Moodle']);
+        }
+
+        $moodleUserId = $getUserResponse->json()['users'][0]['id'];
+
+        //Log::info('ID del usuario a asignar al curso: ', $moodleUserId);
+
+        // Asignar docente al curso en Moodle
         $enrollResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=enrol_manual_enrol_users'
             . '&wstoken=' . urldecode($apikey)
             . '&enrolments[0][roleid]=3'
-            . '&enrolments[0][userid]=' . $teacherId
+            . '&enrolments[0][userid]=' . $moodleUserId
             . '&enrolments[0][courseid]=' . $courseId
         );
 
@@ -477,6 +284,34 @@ class AcademicManagementController extends Controller
             return redirect()->back()->withErrors(['error' => 'Error asignando docente al curso en Moodle']);
         }
 
-        return redirect()->route('admin.academic.show_subcategory', ['id' => $subcategory_id])->with('success', 'Curso creado exitosamente.');
+        // Subir imagen al servidor y guardar referencia en la base de datos
+        $image = $request->file('image');
+        $path = $image->store('course_images', 'public');
+
+        // Crear curso en la base de datos con el ID de Moodle
+        $course = Course::create([
+            'nombre' => $request->input('fullname'),
+            'descripcion' => $request->input('description'),
+            'id_docente' => $teacherId,
+            'id_year' => $yearId,
+            'id_moodle' => $courseId,
+        ]);
+
+        // Guardar referencia del archivo en la tabla media_files con el tipo "foto_de_curso"
+        MediaFile::create([
+            'id_course' => $course->id,
+            'file' => $path,
+            'type' => 'foto_de_curso',
+        ]);
+
+        Log::info('Se creó el curso con los siguientes datos:', [
+            'courseId' => $courseId,
+            'fullname' => $fullname,
+            'shortname' => $shortname,
+            'subcategory_id' => $subcategory_id,
+            'moodleuser' => $teacher->moodleuser,
+        ]);
+
+        return redirect()->route('admin.academic.show_subcategory', ['id' => $yearId])->with('success', 'Curso creado exitosamente.');
     }
 }

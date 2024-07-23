@@ -16,10 +16,10 @@
         @foreach($careers as $career)
             <div class="col-md-4 mb-4">
                 <x-simple-card
-                    title="{{ $career['name'] }}"
-                    subtitle="{{ $career['students'] }} estudiantes"
-                    content="{{ $career['description'] }}"
-                    link="{{ route('admin.academic.show', ['id' => $career['id']]) }}"
+                    title="{{ $career->nombre }}"
+                    subtitle="{{ $career->cant_estudiantes }} estudiantes"
+                    content="{{ $career->descripcion }}"
+                    link="{{ route('admin.academic.show', ['id' => $career->id]) }}"
                     linkText="Ver detalles"
                 />
             </div>
