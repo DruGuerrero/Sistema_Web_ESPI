@@ -31,7 +31,9 @@
                     content="{{ $course['description'] }}"
                     :contentBlocks="[['name' => 'Profesor', 'professor' => $course['professor']]]"
                     leftButtonLink="#"
+                    leftButtonText="Eliminar"
                     rightButtonLink="#"
+                    rightButtonText="Ver"
                 />
                 {{-- Log para verificar los datos pasados al componente --}}
                 @php

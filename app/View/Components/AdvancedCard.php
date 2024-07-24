@@ -13,16 +13,20 @@ class AdvancedCard extends Component
     public $content;
     public $contentBlocks;
     public $leftButtonLink;
+    public $leftButtonText;
     public $rightButtonLink;
+    public $rightButtonText;
 
-    public function __construct($title, $image = '',$content = '', $contentBlocks = [], $leftButtonLink = '#', $rightButtonLink = '#')
+    public function __construct($title, $image = '',$content = '', $contentBlocks = [], $leftButtonLink = '#', $leftButtonText = 'Left Button', $rightButtonLink = '#', $rightButtonText = 'Right Button')
     {
         $this->title = $title;
         $this->image = $image;
         $this->content = $content;
         $this->contentBlocks = $contentBlocks;
         $this->leftButtonLink = $leftButtonLink;
+        $this->leftButtonText = $leftButtonText;
         $this->rightButtonLink = $rightButtonLink;
+        $this->rightButtonText = $rightButtonText;
     }
 
     public function render()

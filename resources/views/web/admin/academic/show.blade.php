@@ -25,7 +25,9 @@
                         ];
                     })->toArray()"
                     leftButtonLink="#"
+                    leftButtonText="Eliminar"
                     rightButtonLink="{{ route('admin.academic.show_subcategory', ['id' => $year->id]) }}"
+                    rightButtonText="Ver"
                 />
             </div>
         @endforeach
