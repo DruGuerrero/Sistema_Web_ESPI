@@ -18,7 +18,7 @@
             <p>{{ strip_tags($year->descripcion) }}</p>
         </div>
         <div>
-            <span>{{ $year->cant_estudiantes }} estudiantes</span>
+            <span class="px-3">{{ $year->cant_estudiantes }} estudiantes</span>
             <a href="{{ route('admin.academic.create_course', ['subcategory_id' => $year->id]) }}" class="btn btn-primary mb-3">Agregar curso</a>
         </div>
     </div>
@@ -29,7 +29,7 @@
                     title="{{ $course['name'] }}"
                     image="{{ $course['image'] }}"
                     content="{{ $course['description'] }}"
-                    :contentBlocks="[['name' => 'Profesor', 'professor' => $course['professor']]]"
+                    :contentBlocks="[['name' => 'Docente', 'professor' => $course['professor']]]"
                     leftButtonLink="#"
                     leftButtonText="Eliminar"
                     rightButtonLink="#"

@@ -8,6 +8,7 @@
         <h1>{{ $career->nombre }}</h1>
         <a href="{{ route('admin.academic.create_year', ['career_id' => $career->id]) }}" class="btn btn-primary mb-3">Agregar año académico</a>
     </div>
+    <hr>
 @stop
 
 @section('content')
