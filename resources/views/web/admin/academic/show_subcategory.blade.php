@@ -59,8 +59,8 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
-                    <p id="deleteItemMessage"></p>
+                <div class="modal-body text-center">
+                    <p class="font-bold" id="deleteItemMessage"></p>
                     <p>Esta acción no podrá deshacerse.</p>
                 </div>
                 <div class="modal-footer">
