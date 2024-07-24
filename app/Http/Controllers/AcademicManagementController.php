@@ -337,4 +337,27 @@ class AcademicManagementController extends Controller
 
         return response()->json(['success' => 'Elemento eliminado exitosamente.']);
     }
+    public function destroyYear($id)
+    {
+        $year = Year::findOrFail($id);
+
+        // Eliminar la categoría de Moodle de forma recursiva
+        $apikey = Config::get('app.moodle_api_key_crear_cursos');
+        $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_delete_categories'
+            . '&wstoken=' . urldecode($apikey)
+            . '&categories[0][id]=' . urlencode($year->id_moodle)
+            . '&categories[0][recursive]=1'
+        );
+
+        if ($response->failed()) {
+            Log::error('Error eliminando categoría en Moodle: ' . $response->body());
+            return response()->json(['error' => 'Error eliminando categoría en Moodle.'], 500);
+        }
+
+        // Eliminar el año y los cursos asociados en la base de datos
+        $year->courses()->delete();
+        $year->delete();
+
+        return response()->json(['success' => 'Año académico eliminado exitosamente.']);
+    }
 }
