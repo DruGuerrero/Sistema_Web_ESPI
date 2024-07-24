@@ -147,6 +147,7 @@ class AcademicManagementController extends Controller
             $imageUrl = $mediaFile ? asset('storage/' . $mediaFile->file) : null;
 
             return [
+                'id' => $course->id,
                 'name' => $course->nombre,
                 'description' => $course->descripcion,
                 'professor' => $course->docente->name,
@@ -313,5 +314,27 @@ class AcademicManagementController extends Controller
         ]);
 
         return redirect()->route('admin.academic.show_subcategory', ['id' => $yearId])->with('success', 'Curso creado exitosamente.');
+    }
+
+    public function destroy($id)
+    {
+        $course = Course::findOrFail($id);
+
+        // Eliminar el curso de Moodle
+        $apikey = Config::get('app.moodle_api_key_crear_cursos');
+        $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_delete_courses'
+            . '&wstoken=' . urldecode($apikey)
+            . '&courseids[0]=' . urlencode($course->id_moodle)
+        );
+
+        if ($response->failed()) {
+            Log::error('Error eliminando curso en Moodle: ' . $response->body());
+            return response()->json(['error' => 'Error eliminando curso en Moodle.'], 500);
+        }
+
+        // Eliminar el curso de la base de datos
+        $course->delete();
+
+        return response()->json(['success' => 'Elemento eliminado exitosamente.']);
     }
 }

@@ -27,7 +27,7 @@
     </div>
 
     <div class="flex justify-between mt-4">
-        <a class="mt-3 inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none" href="{{ $leftButtonLink }}">
+        <a class="mt-3 inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none" href="#" data-item-id="{{ $leftButtonLink }}" onclick="handleDelete(event, '{{ $leftButtonLink }}', '{{ $title }}')">
             {{ $leftButtonText }}
             <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="3 6 5 6 21 6"></polyline>
@@ -35,7 +35,7 @@
                 <path d="M10 11v6"></path>
                 <path d="M14 11v6"></path>
                 <rect x="6" y="2" width="12" height="4" rx="1" ry="1"></rect>
-              </svg>
+            </svg>
         </a>
         <a class="mt-3 inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none" href="{{ $rightButtonLink }}">
             {{ $rightButtonText }}

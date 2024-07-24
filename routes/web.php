@@ -38,5 +38,6 @@ Route::get('Panel-Administrativo', [indexController::class, 'index'])->name('das
         Route::post('academic/store_course', [AcademicManagementController::class, 'storeCourse'])->name('admin.academic.store_course');
         Route::get('academic/create_year/{career_id}', [AcademicManagementController::class, 'createYear'])->name('admin.academic.create_year');
         Route::post('academic/store_year', [AcademicManagementController::class, 'storeYear'])->name('admin.academic.store_year');
+        Route::delete('academic/items/{id}', [AcademicManagementController::class, 'destroy'])->name('admin.academic.items.destroy');
     });
 });
