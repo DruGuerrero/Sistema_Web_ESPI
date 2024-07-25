@@ -3,6 +3,7 @@
 @section('title', 'Registrar Estudiante')
 
 @section('content_header')
+    @vite(['resources/css/app.css','resources/js/app.js'])
     <h1>Registrar Estudiante</h1>
 @stop
 
@@ -47,6 +48,9 @@
             <label for="num_celular">Número de celular:</label>
             <input type="text" name="num_celular" class="form-control" value="{{ old('num_celular') }}" required>
         </div>
+
+        <div class="py-3 flex items-center text-s text-neutral-950 after:flex-1 after:border-t after:border-neutral-950 after:ms-6 text-3xl">Datos del tutor</div>
+       
         <div class="form-group">
             <label for="nombre_tutor">Nombre del tutor:</label>
             <input type="text" name="nombre_tutor" class="form-control" value="{{ old('nombre_tutor') }}" nullable>
@@ -63,7 +67,9 @@
             <label for="parentesco">Parentesco:</label>
             <input type="text" name="parentesco" class="form-control" value="{{ old('parentesco') }}" nullable>
         </div>
-        <a href="{{ route('admin.students.index') }}" class="btn btn-secondary">Cancelar</a>
-        <button type="submit" class="btn btn-success">Registrar</button>
+        <div class="py-2">
+            <a href="{{ route('admin.students.index') }}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-success">Registrar</button>
+        </div>
     </form>
 @stop
