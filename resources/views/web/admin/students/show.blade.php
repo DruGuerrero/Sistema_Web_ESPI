@@ -30,14 +30,16 @@
 
             <h5>Archivos del estudiante</h5>
             @if($files->isEmpty())
-                <p>No hay archivos guardados para este estudiante.</p>
+                <p>No hay archivos guardados de este estudiante.</p>
             @else
                 <ul>
                     @foreach($files as $file)
                         <li>
-                            <a href="{{ route('admin.students.download', $file->id) }}" class="btn btn-primary">
-                                Descargar {{ $file->type }}
-                            </a>
+                            <div class="py-1">
+                                <a href="{{ route('admin.students.download', $file->id) }}" class="btn btn-primary">
+                                    Descargar {{ $file->type }}
+                                </a>
+                            </div>
                         </li>
                     @endforeach
                 </ul>
