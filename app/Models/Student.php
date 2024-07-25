@@ -35,4 +35,9 @@ class Student extends Model
     {
         return $this->hasMany(MediaFile::class, 'student_id');
     }
+
+    public function careers()
+    {
+        return $this->belongsToMany(Career::class, 'enrollments', 'id_student', 'id_career')->withTimestamps();
+    }
 }

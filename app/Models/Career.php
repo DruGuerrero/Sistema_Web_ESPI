@@ -21,4 +21,8 @@ class Career extends Model
     {
         return $this->hasMany(Year::class, 'id_career');
     }
+    public function students()
+    {
+        return $this->belongsToMany(Student::class, 'enrollments', 'id_career', 'id_student')->withTimestamps();
+    }
 }
