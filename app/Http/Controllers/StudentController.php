@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Student;
 use App\Models\MediaFile;
+use App\Models\Career;
+use App\Models\Enrollment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -51,7 +53,8 @@ class StudentController extends Controller
      */
     public function create()
     {
-        return view('web.admin.students.create');
+        $careers = Career::all(); // Obtener todas las carreras
+        return view('web.admin.students.create', compact('careers'));
     }
 
     /**
@@ -71,12 +74,18 @@ class StudentController extends Controller
             'celular_tutor' => 'nullable|string|max:255',
             'ciudad_tutor' => 'nullable|string|max:255',
             'parentesco' => 'nullable|string|max:255',
+            'career_id' => 'required|exists:careers,id', // Validación para carrera
         ]);
 
         $data = $request->all();
         $data['matricula'] = 'NO'; // Asignar "NO" por defecto
 
-        Student::create($data);
+        $student = Student::create($data);
+
+        Enrollment::create([
+            'id_student' => $student->id,
+            'id_career' => $request->career_id,
+        ]);
 
         return redirect()->route('admin.students.index')->with('success', 'Estudiante creado exitosamente.');
     }
@@ -231,14 +240,38 @@ class StudentController extends Controller
             $createdUser = $response->json()[0];
             $userId = $createdUser['id'];
 
-            // ID de la categoría de cursos
-            $categoryId = 3; // Cambia esto al ID de la categoría deseada
+            // Obtener la carrera del estudiante
+            $career = $student->careers->first();
+            if (!$career) {
+                throw new \Exception('No se encontró la carrera del estudiante.');
+            }
 
-            // Obtener todos los cursos en la categoría
+            // Obtener la subcategoría "Primer año"
+            $categoryResponse = Http::get('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_get_categories'
+                . '&wstoken=' . urldecode($apikey)
+                . '&criteria[0][key]=parent'
+                . '&criteria[0][value]=' . $career->id_moodle
+                . '&criteria[1][key]=name'
+                . '&criteria[1][value]=Primer año'
+            );
+
+            if ($categoryResponse->failed()) {
+                Log::error('Error obteniendo subcategoría de Moodle: ' . $categoryResponse->body());
+                return response()->json(['error' => 'Error fetching subcategory from Moodle'], 500);
+            }
+
+            $categories = $categoryResponse->json();
+            if (empty($categories)) {
+                throw new \Exception('No se encontró la subcategoría "Primer año" para la carrera seleccionada.');
+            }
+
+            $subcategory = $categories[0];
+
+            // Obtener todos los cursos en la subcategoria "Primer año"
             $coursesResponse = Http::get('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_get_courses_by_field'
                 . '&wstoken=' . urldecode($apikey)
                 . '&field=category'
-                . '&value=' . $categoryId
+                . '&value=' . $subcategory['id']
             );
 
             if ($coursesResponse->failed()) {

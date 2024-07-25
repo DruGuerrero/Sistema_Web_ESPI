@@ -15,6 +15,7 @@
             <p><strong>Ciudad de domicilio:</strong> {{ $student->ciudad_domicilio }}</p>
             <p><strong>Número de celular:</strong> {{ $student->num_celular }}</p>
             <p><strong>Usuario de moodle:</strong> {{ $student->moodle_user ?? 'No asignado' }}</p>
+            <p><strong>Carrera:</strong> {{ $student->careers->first()->nombre ?? 'No asignada' }}</p>
             <p><strong>Matriculado:</strong> {{ $student->matricula }}</p>
 
             <hr>

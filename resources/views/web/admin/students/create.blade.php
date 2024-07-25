@@ -49,6 +49,15 @@
             <input type="text" name="num_celular" class="form-control" value="{{ old('num_celular') }}" required>
         </div>
 
+        <div class="form-group">
+            <label for="career">Carrera:</label>
+            <select name="career_id" class="form-control" required>
+                @foreach ($careers as $career)
+                    <option value="{{ $career->id }}">{{ $career->nombre }}</option>
+                @endforeach
+            </select>
+        </div>
+
         <div class="py-3 flex items-center text-s text-neutral-950 after:flex-1 after:border-t after:border-neutral-950 after:ms-6 text-3xl">Datos del tutor</div>
        
         <div class="form-group">
