@@ -12,6 +12,7 @@ use App\Models\Year;
 use App\Models\Course;
 use App\Models\MediaFile;
 use App\Models\User;
+use App\Models\Enrollment;
 
 class AcademicManagementController extends Controller
 {
@@ -19,6 +20,11 @@ class AcademicManagementController extends Controller
     {
         // Obtener las carreras desde la base de datos
         $careers = Career::all();
+
+        foreach ($careers as $career) {
+            $studentCount = Enrollment::where('id_career', $career->id)->count();
+            $career->update(['cant_estudiantes' => $studentCount]);
+        }
 
         return view('web.admin.academic.index', compact('careers'));
     }
@@ -139,6 +145,42 @@ class AcademicManagementController extends Controller
     {
         // Obtener el año académico
         $year = Year::with('courses.docente')->findOrFail($id);
+
+        $apikey = Config::get('app.moodle_api_key_detalles_categorias');
+
+        // Obtener todos los cursos en la subcategoría
+        $coursesResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_get_courses_by_field'
+            . '&wstoken=' . urldecode($apikey)
+            . '&field=category'
+            . '&value=' . $year->id_moodle
+        );
+
+        if ($coursesResponse->failed()) {
+            Log::error('Error obteniendo cursos de Moodle: ' . $coursesResponse->body());
+            return;
+        }
+
+        $courses = $coursesResponse->json()['courses'] ?? [];
+
+        $uniqueStudents = collect();
+
+        // Obtener estudiantes inscritos en cada curso
+        foreach ($courses as $course) {
+            $enrolledUsersResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_enrol_get_enrolled_users'
+                . '&wstoken=' . urldecode($apikey)
+                . '&courseid=' . $course['id']
+            );
+
+            if ($enrolledUsersResponse->failed()) {
+                Log::error('Error obteniendo estudiantes inscritos de Moodle: ' . $enrolledUsersResponse->body());
+                continue;
+            }
+
+            $enrolledUsers = $enrolledUsersResponse->json();
+            $uniqueStudents = $uniqueStudents->merge(collect($enrolledUsers)->pluck('id'))->unique();
+        }
+
+        $year->update(['cant_estudiantes' => $uniqueStudents->count()]);
 
         // Obtener los cursos asociados al año académico
         $courses = $year->courses->map(function($course) {
