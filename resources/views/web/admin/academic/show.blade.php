@@ -6,13 +6,16 @@
     @vite(['resources/css/app.css','resources/js/app.js'])
     <div class="d-flex justify-content-between">
         <h1>{{ $career->nombre }}</h1>
-        <a href="{{ route('admin.academic.create_year', ['career_id' => $career->id]) }}" class="btn btn-primary mb-3">Agregar año académico</a>
+        <a href="{{ route('admin.academic.edit_category', ['id' => $career->id]) }}" class="btn btn-primary mb-3">Editar carrera</a>
     </div>
     <hr>
 @stop
 
 @section('content')
-    <p class="py-0.5">{{ strip_tags($career->descripcion) }}</p>
+    <div class="d-flex justify-content-between">
+        <p class="py-0.5">{{ strip_tags($career->descripcion) }}</p>
+        <a href="{{ route('admin.academic.create_year', ['career_id' => $career->id]) }}" class="btn btn-primary mb-3">Agregar año académico</a>
+    </div>
     <div class="row">
         @foreach($career->years as $year)
             <div class="col-md-6 mb-4">
@@ -25,7 +28,7 @@
                             'professor' => $course->docente->name,
                         ];
                     })->toArray()"
-                    leftButtonLink="{{ $year->id }}" {{-- Pasar el ID del año --}}
+                    leftButtonLink="{{ $year->id }}"
                     leftButtonText="Eliminar"
                     rightButtonLink="{{ route('admin.academic.show_subcategory', ['id' => $year->id]) }}"
                     rightButtonText="Ver"

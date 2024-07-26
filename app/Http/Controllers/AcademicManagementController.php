@@ -360,4 +360,90 @@ class AcademicManagementController extends Controller
 
         return response()->json(['success' => 'Año académico eliminado exitosamente.']);
     }
+
+    public function editSubCategory($id)
+    {
+        $year = Year::findOrFail($id);
+        return view('web.admin.academic.edit_subcategory', compact('year'));
+    }
+
+    public function updateSubCategory(Request $request, $id)
+    {
+        $apikey = Config::get('app.moodle_api_key_crear_cursos');
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+        ]);
+
+        $year = Year::findOrFail($id);
+
+        $name = $request->input('name');
+        $description = $request->input('description');
+
+        // Actualizar categoría en Moodle
+        $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_update_categories'
+            . '&wstoken=' . urldecode($apikey)
+            . '&categories[0][id]=' . $year->id_moodle
+            . '&categories[0][name]=' . urlencode($name)
+            . '&categories[0][description]=' . urlencode($description)
+            . '&categories[0][descriptionformat]=2' // PLAIN
+        );
+
+        if ($response->failed()) {
+            Log::error('Error actualizando subcategoría en Moodle: ' . $response->body());
+            return redirect()->back()->withErrors(['error' => 'Error actualizando subcategoría en Moodle']);
+        }
+
+        // Actualizar el año académico en la base de datos
+        $year->update([
+            'nombre' => $name,
+            'descripcion' => $description,
+        ]);
+
+        return redirect()->route('admin.academic.show_subcategory', ['id' => $year->id])->with('success', 'Año académico actualizado exitosamente.');
+    }
+
+    public function editCategory($id)
+    {
+        $career = Career::findOrFail($id);
+        return view('web.admin.academic.edit_category', compact('career'));
+    }
+
+    public function updateCategory(Request $request, $id)
+    {
+        $apikey = Config::get('app.moodle_api_key_crear_cursos');
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+        ]);
+
+        $career = Career::findOrFail($id);
+
+        $name = $request->input('name');
+        $description = $request->input('description');
+
+        // Actualizar categoría en Moodle
+        $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_update_categories'
+            . '&wstoken=' . urldecode($apikey)
+            . '&categories[0][id]=' . $career->id_moodle
+            . '&categories[0][name]=' . urlencode($name)
+            . '&categories[0][description]=' . urlencode($description)
+            . '&categories[0][descriptionformat]=2' // PLAIN
+        );
+
+        if ($response->failed()) {
+            Log::error('Error actualizando categoría en Moodle: ' . $response->body());
+            return redirect()->back()->withErrors(['error' => 'Error actualizando categoría en Moodle']);
+        }
+
+        // Actualizar la carrera en la base de datos
+        $career->update([
+            'nombre' => $name,
+            'descripcion' => $description,
+        ]);
+
+        return redirect()->route('admin.academic.show', ['id' => $career->id])->with('success', 'Carrera actualizada exitosamente.');
+    }
 }

@@ -6,7 +6,7 @@
     @vite(['resources/css/app.css','resources/js/app.js'])
     <div class="d-flex justify-content-between">
         <h1>{{ $year->nombre }}</h1>
-        <a href="#" class="btn btn-primary mb-3">Editar año académico</a>
+        <a href="{{ route('admin.academic.edit_subcategory', ['id' => $year->id]) }}" class="btn btn-primary mb-3">Editar año académico</a>
     </div>
     <hr>
 @stop
