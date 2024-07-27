@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Collection;
 use App\Models\Career;
 use App\Models\Year;
 use App\Models\Course;
@@ -487,5 +488,96 @@ class AcademicManagementController extends Controller
         ]);
 
         return redirect()->route('admin.academic.show', ['id' => $career->id])->with('success', 'Carrera actualizada exitosamente.');
+    }
+    public function showCourse($id)
+    {
+        $course = Course::with('docente', 'mediaFile')->findOrFail($id);
+        // Obtener estudiantes inscritos desde Moodle
+        $apikey = Config::get('app.moodle_api_key_info_estudiantes');
+        $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_enrol_get_enrolled_users'
+            . '&wstoken=' . urldecode($apikey)
+            . '&courseid=' . $course->id_moodle
+        );
+
+        if ($response->failed()) {
+            Log::error('Error obteniendo estudiantes inscritos desde Moodle: ' . $response->body());
+            $students = collect(); // Colección vacía en caso de error
+        } else {
+            $students = collect($response->json());
+        }
+
+        // Obtener calificaciones promedio para cada estudiante
+        $students = $students->map(function ($student) use ($course, $apikey) {
+            $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=gradereport_user_get_grade_items'
+                . '&wstoken=' . urldecode($apikey)
+                . '&courseid=' . $course->id_moodle
+                . '&userid=' . $student['id']
+            );
+
+            if ($response->failed()) {
+                Log::error('Error obteniendo calificaciones desde Moodle: ' . $response->body());
+                $student['average_grade'] = 0; // Valor por defecto en caso de error
+            } else {
+                $gradeItems = collect($response->json()['usergrades'][0]['gradeitems'])
+                    ->reject(function ($item) {
+                        return $item['itemtype'] === 'course';
+                    });
+                
+                $totalGrade = $gradeItems->sum('graderaw');
+                $averageGrade = $gradeItems->count() > 0 ? $totalGrade / $gradeItems->count() : 0;
+                $student['average_grade'] = round($averageGrade, 2); // Redondear a dos decimales
+
+                // Agregar logs para verificar las calificaciones
+                Log::info('Calificaciones para el estudiante ' . $student['fullname'] . ': ' . $gradeItems->pluck('graderaw')->toJson());
+                Log::info('Calificación total: ' . $totalGrade);
+                Log::info('Calificación promedio: ' . $averageGrade);
+            }
+
+            return $student;
+        });
+
+        return view('web.admin.academic.show_course', compact('course', 'students'));
+    }
+    public function editCourse($id)
+    {
+        $course = Course::findOrFail($id);
+        return view('web.admin.academic.edit_course', compact('course'));
+    }
+    public function updateCourse(Request $request, $id)
+    {
+        $apikey = Config::get('app.moodle_api_key_info_estudiantes');
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'required|string',
+        ]);
+
+        $course = Course::findOrFail($id);
+
+        $name = $request->input('name');
+        $description = $request->input('description');
+
+        // Actualizar curso en Moodle
+        $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_update_courses'
+            . '&wstoken=' . urldecode($apikey)
+            . '&courses[0][id]=' . $course->id_moodle
+            . '&courses[0][fullname]=' . urlencode($name)
+            . '&courses[0][shortname]=' . urlencode(substr($name, 0, 4) . $course->id_year)
+            . '&courses[0][summary]=' . urlencode($description)
+            . '&courses[0][summaryformat]=2' // PLAIN
+        );
+
+        if ($response->failed()) {
+            Log::error('Error actualizando curso en Moodle: ' . $response->body());
+            return redirect()->back()->withErrors(['error' => 'Error actualizando curso en Moodle']);
+        }
+
+        // Actualizar el curso en la base de datos
+        $course->update([
+            'nombre' => $name,
+            'descripcion' => $description,
+        ]);
+
+        return redirect()->route('admin.academic.show_course', ['id' => $course->id])->with('success', 'Curso actualizado exitosamente.');
     }
 }

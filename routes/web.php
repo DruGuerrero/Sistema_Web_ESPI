@@ -44,5 +44,8 @@ Route::get('Panel-Administrativo', [indexController::class, 'index'])->name('das
         Route::put('academic/update_subcategory/{id}', [AcademicManagementController::class, 'updateSubCategory'])->name('admin.academic.update_subcategory');
         Route::get('academic/edit_category/{id}', [AcademicManagementController::class, 'editCategory'])->name('admin.academic.edit_category');
         Route::put('academic/update_category/{id}', [AcademicManagementController::class, 'updateCategory'])->name('admin.academic.update_category');
+        Route::get('academic/show_course/{id}', [AcademicManagementController::class, 'showCourse'])->name('admin.academic.show_course');
+        Route::put('academic/update_course/{id}', [AcademicManagementController::class, 'updateCourse'])->name('admin.academic.update_course');
+        Route::get('academic/edit_course/{id}', [AcademicManagementController::class, 'editCourse'])->name('admin.academic.edit_course');
     });
 });

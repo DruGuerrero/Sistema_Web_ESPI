@@ -32,7 +32,7 @@
                     :contentBlocks="[['name' => 'Docente', 'professor' => $course['professor']]]"
                     leftButtonLink="{{ $course['id'] }}" {{-- Pasar el ID del elemento --}}
                     leftButtonText="Eliminar"
-                    rightButtonLink="#"
+                    rightButtonLink="{{ route('admin.academic.show_course', ['id' => $course['id']]) }}"
                     rightButtonText="Ver"
                 />
                 {{-- Log para verificar los datos pasados al componente --}}
