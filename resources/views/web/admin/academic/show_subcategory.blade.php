@@ -6,7 +6,7 @@
     @vite(['resources/css/app.css','resources/js/app.js'])
     <div class="d-flex justify-content-between">
         <h1>{{ $year->nombre }}</h1>
-        <a href="{{ route('admin.academic.edit_subcategory', ['id' => $year->id]) }}" class="btn btn-primary mb-3">Editar año académico</a>
+        <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#editYearModal">Editar año académico</button>
     </div>
     <hr>
 @stop
@@ -49,6 +49,37 @@
     </div>
     <a href="{{ route('admin.academic.show', ['id' => $year->id_career]) }}" class="btn btn-primary">Volver</a>
 
+    <!-- Modal para editar año académico -->
+    <div class="modal fade" id="editYearModal" tabindex="-1" role="dialog" aria-labelledby="editYearModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editYearModalLabel">Editar Año Académico</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editYearForm" action="{{ route('admin.academic.update_subcategory', ['id' => $year->id]) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <div class="form-group">
+                            <label for="name">Nombre:</label>
+                            <input type="text" name="name" class="form-control" value="{{ old('name', $year->nombre) }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Descripción:</label>
+                            <textarea name="description" class="form-control" rows="5" required>{{ old('description', $year->descripcion) }}</textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveYearChanges">Actualizar</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Modal de confirmación -->
     <div class="modal fade" id="deleteItemModal" tabindex="-1" role="dialog" aria-labelledby="deleteItemModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -108,6 +139,10 @@
                         alert('Error al eliminar el elemento: ' + xhr.responseText);
                     }
                 });
+            });
+            // Guardar cambios de año académico
+            $('#saveYearChanges').on('click', function() {
+                $('#editYearForm').submit();
             });
         });
     </script>    

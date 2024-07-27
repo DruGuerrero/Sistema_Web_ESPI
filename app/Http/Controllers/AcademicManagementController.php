@@ -404,12 +404,6 @@ class AcademicManagementController extends Controller
         return response()->json(['success' => 'Año académico eliminado exitosamente.']);
     }
 
-    public function editSubCategory($id)
-    {
-        $year = Year::findOrFail($id);
-        return view('web.admin.academic.edit_subcategory', compact('year'));
-    }
-
     public function updateSubCategory(Request $request, $id)
     {
         $apikey = Config::get('app.moodle_api_key_crear_cursos');
@@ -445,12 +439,6 @@ class AcademicManagementController extends Controller
         ]);
 
         return redirect()->route('admin.academic.show_subcategory', ['id' => $year->id])->with('success', 'Año académico actualizado exitosamente.');
-    }
-
-    public function editCategory($id)
-    {
-        $career = Career::findOrFail($id);
-        return view('web.admin.academic.edit_category', compact('career'));
     }
 
     public function updateCategory(Request $request, $id)
@@ -537,11 +525,6 @@ class AcademicManagementController extends Controller
         });
 
         return view('web.admin.academic.show_course', compact('course', 'students'));
-    }
-    public function editCourse($id)
-    {
-        $course = Course::findOrFail($id);
-        return view('web.admin.academic.edit_course', compact('course'));
     }
     public function updateCourse(Request $request, $id)
     {

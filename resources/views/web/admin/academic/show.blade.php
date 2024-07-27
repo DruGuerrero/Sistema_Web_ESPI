@@ -6,7 +6,7 @@
     @vite(['resources/css/app.css','resources/js/app.js'])
     <div class="d-flex justify-content-between">
         <h1>{{ $career->nombre }}</h1>
-        <a href="{{ route('admin.academic.edit_category', ['id' => $career->id]) }}" class="btn btn-primary mb-3">Editar carrera</a>
+        <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#editCareerModal">Editar carrera</button>
     </div>
     <hr>
 @stop
@@ -38,6 +38,37 @@
     </div>
     <a href="{{ route('admin.academic.index') }}" class="btn btn-primary">Volver</a>
 
+    <!-- Modal para editar carrera -->
+    <div class="modal fade" id="editCareerModal" tabindex="-1" role="dialog" aria-labelledby="editCareerModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editCareerModalLabel">Editar Carrera</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editCareerForm" action="{{ route('admin.academic.update_category', ['id' => $career->id]) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <div class="form-group">
+                            <label for="name">Nombre:</label>
+                            <input type="text" name="name" class="form-control" value="{{ old('name', $career->nombre) }}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Descripción:</label>
+                            <textarea name="description" class="form-control" rows="5" required>{{ old('description', $career->descripcion) }}</textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveCareerChanges">Actualizar</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <!-- Modal de confirmación -->
     <div class="modal fade" id="deleteItemModal" tabindex="-1" role="dialog" aria-labelledby="deleteItemModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -89,6 +120,10 @@
                         alert('Error al eliminar el elemento: ' + xhr.responseText);
                     }
                 });
+            });
+            // Guardar cambios de carrera
+            $('#saveCareerChanges').on('click', function() {
+                $('#editCareerForm').submit();
             });
         });
     </script>

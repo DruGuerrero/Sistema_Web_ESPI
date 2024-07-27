@@ -345,6 +345,12 @@ return [
             'icon' => 'fas fa-fw fa-user',
             'can' => 'manage-users',
         ],
+        [
+            'text' => 'Pagos',
+            'url' => 'admin/payments',
+            'icon' => 'fas fa-fw fa-user',
+            'can' => 'manage-users',
+        ],
     ],
 
     /*

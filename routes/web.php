@@ -40,12 +40,9 @@ Route::get('Panel-Administrativo', [indexController::class, 'index'])->name('das
         Route::post('academic/store_year', [AcademicManagementController::class, 'storeYear'])->name('admin.academic.store_year');
         Route::delete('academic/items/{id}', [AcademicManagementController::class, 'destroy'])->name('admin.academic.items.destroy');
         Route::delete('/academic/years/{id}', [AcademicManagementController::class, 'destroyYear'])->name('admin.academic.years.destroy');
-        Route::get('academic/edit_subcategory/{id}', [AcademicManagementController::class, 'editSubCategory'])->name('admin.academic.edit_subcategory');
         Route::put('academic/update_subcategory/{id}', [AcademicManagementController::class, 'updateSubCategory'])->name('admin.academic.update_subcategory');
-        Route::get('academic/edit_category/{id}', [AcademicManagementController::class, 'editCategory'])->name('admin.academic.edit_category');
         Route::put('academic/update_category/{id}', [AcademicManagementController::class, 'updateCategory'])->name('admin.academic.update_category');
         Route::get('academic/show_course/{id}', [AcademicManagementController::class, 'showCourse'])->name('admin.academic.show_course');
         Route::put('academic/update_course/{id}', [AcademicManagementController::class, 'updateCourse'])->name('admin.academic.update_course');
-        Route::get('academic/edit_course/{id}', [AcademicManagementController::class, 'editCourse'])->name('admin.academic.edit_course');
     });
 });
