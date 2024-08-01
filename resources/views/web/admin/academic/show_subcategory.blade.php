@@ -22,30 +22,32 @@
             <a href="{{ route('admin.academic.create_course', ['subcategory_id' => $year->id]) }}" class="btn btn-primary mb-3">Agregar curso</a>
         </div>
     </div>
-    <div class="row">
-        @foreach($courses as $course)
-            <div class="col-md-4 mb-4">
-                <x-advanced-card
-                    title="{{ $course['name'] }}"
-                    image="{{ $course['image'] }}"
-                    content="{{ $course['description'] }}"
-                    :contentBlocks="[['name' => 'Docente', 'professor' => $course['professor']]]"
-                    leftButtonLink="{{ $course['id'] }}" {{-- Pasar el ID del elemento --}}
-                    leftButtonText="Eliminar"
-                    rightButtonLink="{{ route('admin.academic.show_course', ['id' => $course['id']]) }}"
-                    rightButtonText="Ver"
-                />
-                {{-- Log para verificar los datos pasados al componente --}}
-                @php
-                    Log::info('Course Data Passed to Component:', [
-                        'name' => $course['name'],
-                        'image' => $course['image'],
-                        'description' => $course['description'],
-                        'professor' => $course['professor']
-                    ]);
-                @endphp
-            </div>
-        @endforeach
+    <div class="flex flex-wrap justify-center items-center">
+        <div class="row">
+            @foreach($courses as $course)
+                <div class="col-md-4 mb-4">
+                    <x-advanced-card
+                        title="{{ $course['name'] }}"
+                        image="{{ $course['image'] }}"
+                        content="{{ $course['description'] }}"
+                        :contentBlocks="[['name' => 'Docente', 'professor' => $course['professor']]]"
+                        leftButtonLink="{{ $course['id'] }}" {{-- Pasar el ID del elemento --}}
+                        leftButtonText="Eliminar"
+                        rightButtonLink="{{ route('admin.academic.show_course', ['id' => $course['id']]) }}"
+                        rightButtonText="Ver"
+                    />
+                    {{-- Log para verificar los datos pasados al componente --}}
+                    @php
+                        Log::info('Course Data Passed to Component:', [
+                            'name' => $course['name'],
+                            'image' => $course['image'],
+                            'description' => $course['description'],
+                            'professor' => $course['professor']
+                        ]);
+                    @endphp
+                </div>
+            @endforeach
+        </div>
     </div>
     <a href="{{ route('admin.academic.show', ['id' => $year->id_career]) }}" class="btn btn-primary">Volver</a>
 

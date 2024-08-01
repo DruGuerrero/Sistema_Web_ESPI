@@ -40,4 +40,14 @@ class Student extends Model
     {
         return $this->belongsToMany(Career::class, 'enrollments', 'id_student', 'id_career')->withTimestamps();
     }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'id_student');
+    }
+    
+    public function debts()
+    {
+        return $this->hasMany(Debt::class, 'id_student');
+    }
 }

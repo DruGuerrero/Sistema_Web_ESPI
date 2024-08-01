@@ -16,25 +16,27 @@
         <p class="py-0.5">{{ strip_tags($career->descripcion) }}</p>
         <a href="{{ route('admin.academic.create_year', ['career_id' => $career->id]) }}" class="btn btn-primary mb-3">Agregar año académico</a>
     </div>
-    <div class="row">
-        @foreach($career->years as $year)
-            <div class="col-md-6 mb-4">
-                <x-advanced-card
-                    title="{{ $year->nombre }}"
-                    content="{{ strip_tags($year->descripcion) }}"
-                    :contentBlocks="$year->courses->map(function($course) {
-                        return [
-                            'name' => $course->nombre,
-                            'professor' => $course->docente->name,
-                        ];
-                    })->toArray()"
-                    leftButtonLink="{{ $year->id }}"
-                    leftButtonText="Eliminar"
-                    rightButtonLink="{{ route('admin.academic.show_subcategory', ['id' => $year->id]) }}"
-                    rightButtonText="Ver"
-                />
-            </div>
-        @endforeach
+    <div class="flex flex-wrap justify-center items-center">
+        <div class="row">
+            @foreach($career->years as $year)
+                <div class="col-md-6 mb-4">
+                    <x-advanced-card
+                        title="{{ $year->nombre }}"
+                        content="{{ strip_tags($year->descripcion) }}"
+                        :contentBlocks="$year->courses->map(function($course) {
+                            return [
+                                'name' => $course->nombre,
+                                'professor' => $course->docente->name,
+                            ];
+                        })->toArray()"
+                        leftButtonLink="{{ $year->id }}"
+                        leftButtonText="Eliminar"
+                        rightButtonLink="{{ route('admin.academic.show_subcategory', ['id' => $year->id]) }}"
+                        rightButtonText="Ver"
+                    />
+                </div>
+            @endforeach
+        </div>
     </div>
     <a href="{{ route('admin.academic.index') }}" class="btn btn-primary">Volver</a>
 

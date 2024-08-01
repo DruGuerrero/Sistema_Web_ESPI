@@ -5,6 +5,7 @@ use App\Http\Controllers\admin\indexController;
 use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\AcademicManagementController;
+use App\Http\Controllers\PaymentController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -44,5 +45,15 @@ Route::get('Panel-Administrativo', [indexController::class, 'index'])->name('das
         Route::put('academic/update_category/{id}', [AcademicManagementController::class, 'updateCategory'])->name('admin.academic.update_category');
         Route::get('academic/show_course/{id}', [AcademicManagementController::class, 'showCourse'])->name('admin.academic.show_course');
         Route::put('academic/update_course/{id}', [AcademicManagementController::class, 'updateCourse'])->name('admin.academic.update_course');
+        Route::post('academic/refresh_cache/{id}', [AcademicManagementController::class, 'refreshCache'])->name('admin.academic.refresh_cache');
+        Route::resource('payments', PaymentController::class)->except(['show'])->names('admin.payments');
+        Route::get('payments/show_payments', [PaymentController::class, 'show'])->name('admin.payments.show_payments');
+        Route::get('payments/show_products', [PaymentController::class, 'showProducts'])->name('admin.payments.show_products');
+        Route::get('payments/show_debts', [PaymentController::class, 'showDebts'])->name('admin.payments.show_debts');
+        Route::post('products', [PaymentController::class, 'storeProduct'])->name('admin.products.store');
+        Route::put('products/{product}', [PaymentController::class, 'updateProduct'])->name('admin.products.update');
+        Route::delete('products/{product}', [PaymentController::class, 'destroyProduct'])->name('admin.products.destroy');
+        Route::get('payments/operate_payment', [PaymentController::class, 'operatePayment'])->name('admin.payments.operate_payment');
+        Route::post('debts/pay', [PaymentController::class, 'payDebt'])->name('admin.debts.pay');
     });
 });

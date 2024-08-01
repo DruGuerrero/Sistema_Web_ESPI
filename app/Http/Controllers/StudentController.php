@@ -14,9 +14,6 @@ use Illuminate\Support\Facades\Config;
 
 class StudentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index(Request $request)
     {
         $query = Student::query();
@@ -47,19 +44,12 @@ class StudentController extends Controller
             'index' => ($students->currentPage() - 1) * $students->perPage()
         ]);
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         $careers = Career::all(); // Obtener todas las carreras
         return view('web.admin.students.create', compact('careers'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -90,9 +80,6 @@ class StudentController extends Controller
         return redirect()->route('admin.students.index')->with('success', 'Estudiante creado exitosamente.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(Student $student)
     {
         // Obtener la foto tipo carnet del estudiante
@@ -104,17 +91,11 @@ class StudentController extends Controller
         return view('web.admin.students.show', compact('student', 'photoUrl', 'files'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Student $student)
     {
         return view('web.admin.students.edit', compact('student'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Student $student)
     {
         $request->validate([
@@ -315,10 +296,7 @@ class StudentController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-    
-    /**
-     * Remove the specified resource from storage.
-     */
+
     public function destroy(Student $student)
     {
         $student->delete();

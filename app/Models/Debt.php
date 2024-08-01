@@ -5,13 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Enrollment extends Model
+class Debt extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'id_student',
-        'id_career',
+        'id_product',
+        'monto_pendiente',
     ];
 
     public function student()
@@ -19,8 +20,13 @@ class Enrollment extends Model
         return $this->belongsTo(Student::class, 'id_student');
     }
 
-    public function career()
+    public function product()
     {
-        return $this->belongsTo(Career::class, 'id_career');
+        return $this->belongsTo(Product::class, 'id_product');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'id_debt');
     }
 }

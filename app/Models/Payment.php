@@ -5,13 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Enrollment extends Model
+class Payment extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'id_student',
-        'id_career',
+        'id_product',
+        'fecha',
+        'monto_pagado',
+        'id_debt',
     ];
 
     public function student()
@@ -19,8 +22,13 @@ class Enrollment extends Model
         return $this->belongsTo(Student::class, 'id_student');
     }
 
-    public function career()
+    public function product()
     {
-        return $this->belongsTo(Career::class, 'id_career');
+        return $this->belongsTo(Product::class, 'id_product');
+    }
+
+    public function debt()
+    {
+        return $this->belongsTo(Debt::class, 'id_debt');
     }
 }

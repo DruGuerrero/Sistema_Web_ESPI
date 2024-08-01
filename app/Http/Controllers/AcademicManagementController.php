@@ -480,48 +480,56 @@ class AcademicManagementController extends Controller
     public function showCourse($id)
     {
         $course = Course::with('docente', 'mediaFile')->findOrFail($id);
-        // Obtener estudiantes inscritos desde Moodle
-        $apikey = Config::get('app.moodle_api_key_info_estudiantes');
-        $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_enrol_get_enrolled_users'
-            . '&wstoken=' . urldecode($apikey)
-            . '&courseid=' . $course->id_moodle
-        );
 
-        if ($response->failed()) {
-            Log::error('Error obteniendo estudiantes inscritos desde Moodle: ' . $response->body());
-            $students = collect(); // Colección vacía en caso de error
-        } else {
-            $students = collect($response->json());
-        }
+        // Clave para el caché
+        $cacheKey = 'course_' . $course->id . '_students';
 
-        // Obtener calificaciones promedio para cada estudiante
-        $students = $students->map(function ($student) use ($course, $apikey) {
-            $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=gradereport_user_get_grade_items'
+        // Intentar obtener los estudiantes y sus calificaciones del caché
+        $students = Cache::remember($cacheKey, 60 * 60, function () use ($course, $cacheKey) {
+            $apikey = Config::get('app.moodle_api_key_info_estudiantes');
+            $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_enrol_get_enrolled_users'
                 . '&wstoken=' . urldecode($apikey)
                 . '&courseid=' . $course->id_moodle
-                . '&userid=' . $student['id']
             );
 
             if ($response->failed()) {
-                Log::error('Error obteniendo calificaciones desde Moodle: ' . $response->body());
-                $student['average_grade'] = 0; // Valor por defecto en caso de error
+                Log::error('Error obteniendo estudiantes inscritos desde Moodle: ' . $response->body());
+                return collect(); // Colección vacía en caso de error
             } else {
-                $gradeItems = collect($response->json()['usergrades'][0]['gradeitems'])
-                    ->reject(function ($item) {
-                        return $item['itemtype'] === 'course';
-                    });
-                
-                $totalGrade = $gradeItems->sum('graderaw');
-                $averageGrade = $gradeItems->count() > 0 ? $totalGrade / $gradeItems->count() : 0;
-                $student['average_grade'] = round($averageGrade, 2); // Redondear a dos decimales
-
-                // Agregar logs para verificar las calificaciones
-                Log::info('Calificaciones para el estudiante ' . $student['fullname'] . ': ' . $gradeItems->pluck('graderaw')->toJson());
-                Log::info('Calificación total: ' . $totalGrade);
-                Log::info('Calificación promedio: ' . $averageGrade);
+                $students = collect($response->json());
             }
 
-            return $student;
+            // Obtener calificaciones promedio para cada estudiante
+            $students = $students->map(function ($student) use ($course, $apikey) {
+                $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=gradereport_user_get_grade_items'
+                    . '&wstoken=' . urldecode($apikey)
+                    . '&courseid=' . $course->id_moodle
+                    . '&userid=' . $student['id']
+                );
+
+                if ($response->failed()) {
+                    Log::error('Error obteniendo calificaciones desde Moodle: ' . $response->body());
+                    $student['average_grade'] = 0; // Valor por defecto en caso de error
+                } else {
+                    $gradeItems = collect($response->json()['usergrades'][0]['gradeitems'])
+                        ->reject(function ($item) {
+                            return $item['itemtype'] === 'course';
+                        });
+
+                    $totalGrade = $gradeItems->sum('graderaw');
+                    $averageGrade = $gradeItems->count() > 0 ? $totalGrade / $gradeItems->count() : 0;
+                    $student['average_grade'] = round($averageGrade, 2); // Redondear a dos decimales
+
+                    // Agregar logs para verificar las calificaciones
+                    Log::info('Calificaciones para el estudiante ' . $student['fullname'] . ': ' . $gradeItems->pluck('graderaw')->toJson());
+                    Log::info('Calificación total: ' . $totalGrade);
+                    Log::info('Calificación promedio: ' . $averageGrade);
+                }
+
+                return $student;
+            });
+
+            return $students;
         });
 
         return view('web.admin.academic.show_course', compact('course', 'students'));
@@ -561,6 +569,18 @@ class AcademicManagementController extends Controller
             'descripcion' => $description,
         ]);
 
+        Cache::forget('course_' . $course->id . '_students');
+
         return redirect()->route('admin.academic.show_course', ['id' => $course->id])->with('success', 'Curso actualizado exitosamente.');
+    }
+
+    public function refreshCache($id)
+    {
+        $course = Course::findOrFail($id);
+
+        //invalidar cache
+        Cache::forget('course_' . $course->id . '_students');
+
+        return redirect()->route('admin.academic.show_course', ['id' => $course->id])->with('success', 'Caché actualizado exitosamente.');
     }
 }

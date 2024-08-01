@@ -12,7 +12,7 @@
 @stop
 
 @section('content')
-    <div class="row">
+    <div class="row flex flex-wrap justify-center items-center">
         @foreach($careers as $career)
             <div class="col-md-4 mb-4">
                 <x-simple-card

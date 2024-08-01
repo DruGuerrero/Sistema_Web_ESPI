@@ -4,7 +4,7 @@
 
 @section('content_header')
     @vite(['resources/css/app.css','resources/js/app.js'])
-    <div class="d-flex justify-content-between">
+    <div class="d-flex justify-content-between px-2.5">
         <h1>{{ $course->nombre }}</h1>
         <button class="btn btn-primary mb-3" data-toggle="modal" data-target="#editCourseModal">Editar Curso</button>
     </div>
@@ -12,8 +12,12 @@
 @stop
 
 @section('content')
-    <div>
+    <div class="d-flex justify-content-between px-2.5">
         <p>{{ $course->descripcion }}</p>
+        <form id="refreshCacheForm" action="{{ route('admin.academic.refresh_cache', ['id' => $course->id]) }}" method="POST" style="display: inline;">
+            @csrf
+            <button type="submit" class="btn btn-secondary">Actualizar</button>
+        </form>
     </div>
     @php
         $headers = ['N°', 'Nombre', 'Promedio'];

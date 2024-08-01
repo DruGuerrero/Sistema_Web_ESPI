@@ -13,13 +13,6 @@ use Illuminate\Support\Facades\Cache;
 
 class UserController extends Controller
 {
-    /*
-    public function index()
-    {
-        $users = User::all();
-        return view('web.admin.users.index', compact('users'));
-    }
-    */
     public function __construct()
     {
         $this->middleware('superuser');
@@ -175,14 +168,6 @@ class UserController extends Controller
 
         $user->update($data);
         
-        /*
-        $user->update([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => $request->password ? Hash::make($request->password) : $user->password,
-            'role' => $request->role,
-        ]);
-*/
         return redirect()->route('admin.users.index')->with('success', 'Usuario actualizado exitosamente.');
     }
 
