@@ -3,54 +3,62 @@
 @section('title', 'Detalles del Estudiante')
 
 @section('content_header')
-    <h1>{{ $student->nombre }} {{ $student->apellido_paterno }} {{ $student->apellido_materno }}</h1>
+    @vite(['resources/css/app.css','resources/js/app.js'])
+    <div class="flex justify-between px-2.5 py-2">
+        <h1>{{ $student->nombre }} {{ $student->apellido_paterno }} {{ $student->apellido_materno }}</h1>
+    </div>
+    <hr>
 @stop
 
 @section('content')
-    <div class="card">
-        <div class="card-body">
-            <img src="{{ $photoUrl }}" alt="Foto tipo carnet" class="img-thumbnail">
-            <p><strong>Número de carnet:</strong> {{ $student->num_carnet }}</p>
-            <p><strong>E-mail:</strong> {{ $student->email }}</p>
-            <p><strong>Ciudad de domicilio:</strong> {{ $student->ciudad_domicilio }}</p>
-            <p><strong>Número de celular:</strong> {{ $student->num_celular }}</p>
-            <p><strong>Usuario de moodle:</strong> {{ $student->moodle_user ?? 'No asignado' }}</p>
-            <p><strong>Carrera:</strong> {{ $student->careers->first()->nombre ?? 'No asignada' }}</p>
-            <p><strong>Matriculado:</strong> {{ $student->matricula }}</p>
+    <div class="container mx-auto py-5">
+        <div class="max-w-2xl mx-auto bg-white p-6 rounded-lg shadow-lg">
+            <div class="flex justify-center mb-6">
+                <img src="{{ $photoUrl }}" alt="Foto tipo carnet" class="w-40 h-40 rounded-full shadow-lg">
+            </div>
+            <div class="grid grid-cols-1 gap-4">
+                <p><strong>Número de carnet:</strong> {{ $student->num_carnet }}</p>
+                <p><strong>E-mail:</strong> {{ $student->email }}</p>
+                <p><strong>Ciudad de domicilio:</strong> {{ $student->ciudad_domicilio }}</p>
+                <p><strong>Número de celular:</strong> {{ $student->num_celular }}</p>
+                <p><strong>Usuario de Moodle:</strong> {{ $student->moodle_user ?? 'No asignado' }}</p>
+                <p><strong>Carrera:</strong> {{ $student->careers->first()->nombre ?? 'No asignada' }}</p>
+                <p><strong>Matriculado:</strong> {{ $student->matricula }}</p>
 
-            <hr>
+                <hr class="my-4">
 
-            <h5>Datos del tutor</h5>
-            <p><strong>Nombre completo:</strong> {{ $student->nombre_tutor }}</p>
-            <p><strong>Número de celular:</strong> {{ $student->celular_tutor }}</p>
-            <p><strong>Ciudad de domicilio:</strong> {{ $student->ciudad_tutor }}</p>
-            <p><strong>Parentesco:</strong> {{ $student->parentesco }}</p>
+                <h5 class="text-xl font-bold">Datos del Tutor</h5>
+                <p><strong>Nombre completo:</strong> {{ $student->nombre_tutor }}</p>
+                <p><strong>Número de celular:</strong> {{ $student->celular_tutor }}</p>
+                <p><strong>Ciudad de domicilio:</strong> {{ $student->ciudad_tutor }}</p>
+                <p><strong>Parentesco:</strong> {{ $student->parentesco }}</p>
 
-            <hr>
+                <hr class="my-4">
 
-            <h5>Archivos del estudiante</h5>
-            @if($files->isEmpty())
-                <p>No hay archivos guardados de este estudiante.</p>
-            @else
-                <ul>
-                    @foreach($files as $file)
-                        <li>
-                            <div class="py-1">
+                <h5 class="text-xl font-bold">Archivos del Estudiante</h5>
+                @if($files->isEmpty())
+                    <p>No hay archivos guardados de este estudiante.</p>
+                @else
+                    <ul class="list-disc list-inside">
+                        @foreach($files as $file)
+                            <li class="mb-2">
                                 <a href="{{ route('admin.students.download', $file->id) }}" class="btn btn-primary">
                                     Descargar {{ $file->type }}
                                 </a>
-                            </div>
-                        </li>
-                    @endforeach
-                </ul>
-            @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
 
-            <a href="{{ route('admin.students.index') }}" class="btn btn-secondary">Volver</a>
-            <a href="{{ route('admin.students.edit', $student->id) }}" class="btn btn-primary">Editar</a>
+                <div class="flex justify-between mt-6">
+                    <a href="{{ route('admin.students.index') }}" class="btn btn-secondary">Volver</a>
+                    <a href="{{ route('admin.students.edit', $student->id) }}" class="btn btn-primary">Editar</a>
 
-            @if($student->matricula === 'NO')
-                <button class="btn btn-success" id="matricular-btn">Matricular</button>
-            @endif
+                    @if($student->matricula === 'NO')
+                        <button class="btn btn-success" id="matricular-btn">Matricular</button>
+                    @endif
+                </div>
+            </div>
         </div>
     </div>
 
