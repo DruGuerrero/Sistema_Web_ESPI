@@ -331,26 +331,26 @@ return [
             'text' => 'Usuarios',
             'url' => 'admin/users',
             'icon' => 'fas fa-fw fa-user',
-            'can' => 'manage-users',
+            'can' => 'manage-users', // Solo visible para Superusuario
         ],
         [
             'text' => 'Estudiantes',
             'url' => 'admin/students',
             'icon' => 'fas fa-fw fa-user',
-            'can' => 'manage-users',
+            'can' => 'manage-students', // Visible para Superusuario y Administrativo
         ],
         [
             'text' => 'Gestión académica',
             'url' => 'admin/academic',
             'icon' => 'fas fa-fw fa-user',
-            'can' => 'manage-users',
+            'can' => 'manage-academic', // Visible para Superusuario, Jefe de carrera y Docente
         ],
         [
             'text' => 'Pagos',
             'url' => 'admin/payments',
             'icon' => 'fas fa-fw fa-user',
-            'can' => 'manage-users',
-        ],
+            'can' => 'manage-payments', // Visible para Superusuario y Administrativo
+        ],        
     ],
 
     /*

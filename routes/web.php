@@ -6,6 +6,7 @@ use App\Http\Controllers\admin\UserController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\AcademicManagementController;
 use App\Http\Controllers\PaymentController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -20,18 +21,23 @@ use App\Http\Controllers\PaymentController;
 Route::get('/', function () {
     return view('welcome');
 });
-Route::group(['prefix'=> 'admin', 'middleware' => ['auth:sanctum', 'verified']], function(){
-Route::get('Panel-Administrativo', [indexController::class, 'index'])->name('dashboard');
-    Route::group(['middleware' => 'superuser'], function() {
+
+// Rutas protegidas por autenticación
+Route::group(['prefix' => 'admin', 'middleware' => ['auth:sanctum', 'verified']], function () {
+
+    Route::get('Panel-Administrativo', [indexController::class, 'index'])->name('dashboard');
+
+    // Rutas exclusivas para Superusuario
+    Route::group(['middleware' => 'can:manage-users'], function () {
         Route::resource('users', UserController::class)->except(['show'])->names('admin.users');
-        Route::get('users/change-password', [UserController::class, 'showChangePasswordForm'])->name('admin.users.changePassword');
-        Route::post('users/change-password', [UserController::class, 'updatePassword'])->name('admin.users.updatePassword');
-        Route::resource('students', StudentController::class)->names('admin.students');
-        Route::get('students/{mediaFile}/download', [StudentController::class, 'download'])->name('admin.students.download');
-        Route::delete('students/{mediaFile}/delete', [StudentController::class, 'deleteFile'])->name('admin.students.deleteFile');
-        Route::post('students/{student}/matriculate', [StudentController::class, 'matriculate'])
-            ->name('admin.students.matriculate')
-            ->middleware('moodle.permission');
+    });
+
+    // Rutas para cambio de contraseña accesibles por cualquier usuario autenticado
+    Route::get('users/change-password', [UserController::class, 'showChangePasswordForm'])->name('admin.users.changePassword');
+    Route::post('users/change-password', [UserController::class, 'updatePassword'])->name('admin.users.updatePassword');
+
+    // Rutas accesibles por Superusuario, Jefe de carrera y Docente (Gestión Académica)
+    Route::group(['middleware' => ['can:manage-academic']], function () {
         Route::resource('academic', AcademicManagementController::class)->names('admin.academic');
         Route::get('academic/create', [AcademicManagementController::class, 'create'])->name('admin.academic.create');
         Route::post('academic', [AcademicManagementController::class, 'store'])->name('admin.academic.store');
@@ -48,7 +54,20 @@ Route::get('Panel-Administrativo', [indexController::class, 'index'])->name('das
         Route::get('academic/show_course/{id}', [AcademicManagementController::class, 'showCourse'])->name('admin.academic.show_course');
         Route::put('academic/update_course/{id}', [AcademicManagementController::class, 'updateCourse'])->name('admin.academic.update_course');
         Route::post('academic/refresh_cache/{id}', [AcademicManagementController::class, 'refreshCache'])->name('admin.academic.refresh_cache');
-        Route::resource('payments', PaymentController::class)->except(['show'])->names('admin.payments');
+    });
+
+    // Rutas accesibles por Superusuario y Administrativo (Gestión de Estudiantes y Pagos)
+    Route::group(['middleware' => ['can:manage-students', 'can:manage-payments']], function () {
+        // Módulo de gestión de estudiantes
+        Route::resource('students', StudentController::class)->names('admin.students');
+        Route::get('students/{mediaFile}/download', [StudentController::class, 'download'])->name('admin.students.download');
+        Route::delete('students/{mediaFile}/delete', [StudentController::class, 'deleteFile'])->name('admin.students.deleteFile');
+        Route::post('students/{student}/matriculate', [StudentController::class, 'matriculate'])
+            ->name('admin.students.matriculate')
+            ->middleware('moodle.permission');
+
+        // Módulo de gestión de pagos
+        Route::resource('payments', PaymentController::class)->names('admin.payments');
         Route::get('payments/show_payments', [PaymentController::class, 'show'])->name('admin.payments.show_payments');
         Route::get('payments/show_products', [PaymentController::class, 'showProducts'])->name('admin.payments.show_products');
         Route::get('payments/show_debts', [PaymentController::class, 'showDebts'])->name('admin.payments.show_debts');

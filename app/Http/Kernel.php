@@ -68,5 +68,8 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'superuser' => \App\Http\Middleware\CheckSuperuser::class,
         'moodle.permission' => \App\Http\Middleware\CheckMoodlePermission::class,
+        'jefe-de-carrera' => \App\Http\Middleware\CheckJefeDeCarrera::class,
+        'docente' => \App\Http\Middleware\CheckDocente::class,
+        'administrativo' => \App\Http\Middleware\CheckAdministrativo::class,
     ];
 }
