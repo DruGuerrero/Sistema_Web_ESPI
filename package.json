@@ -18,6 +18,8 @@
     "dependencies": {
         "@preline/combobox": "^2.4.1",
         "@preline/select": "^2.3.0",
+        "apexcharts": "^3.52.0",
+        "lodash": "^4.17.21",
         "preline": "^2.3.0"
     }
 }
