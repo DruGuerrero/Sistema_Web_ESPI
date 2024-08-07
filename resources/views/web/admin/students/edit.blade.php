@@ -64,10 +64,9 @@
             <label for="parentesco">Parentesco:</label>
             <input type="text" name="parentesco" class="form-control" value="{{ old('parentesco', $student->parentesco) }}" nullable>
         </div>
-        <!-- Campos de archivos -->
         <div class="form-group">
-            <label for="carnet_escaneado">Carnet escaneado:</label>
-            <input type="file" name="carnet_escaneado" class="form-control">
+            <label for="documentos_estudiante">Documentos del Estudiante:</label>
+            <input type="file" name="documentos_estudiante" class="form-control">
         </div>
         <div class="form-group">
             <label for="foto_tipo_carnet">Foto tipo carnet:</label>

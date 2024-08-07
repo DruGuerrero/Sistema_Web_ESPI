@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -50,27 +51,35 @@ class UserController extends Controller
         return view('web.admin.users.create');
     }
 
+    private function generateRandomPassword($length = 10)
+    {
+        $upperCase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $lowerCase = 'abcdefghijklmnopqrstuvwxyz';
+        $numbers = '0123456789';
+        $specialChars = '!@#$%&*';
+
+        $password = substr(str_shuffle($upperCase), 0, 1) .
+                    substr(str_shuffle($lowerCase), 0, 1) .
+                    substr(str_shuffle($numbers), 0, 1) .
+                    substr(str_shuffle($specialChars), 0, 1);
+
+        $allChars = $upperCase . $lowerCase . $numbers . $specialChars;
+        $remainingLength = $length - 4;
+
+        $password .= substr(str_shuffle($allChars), 0, $remainingLength);
+
+        return str_shuffle($password);
+    }
+
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => [
-                'required',
-                'string',
-                'min:8',
-                'confirmed',
-                'regex:/[a-z]/', // al menos una minuscula
-                'regex:/[A-Z]/', // al menos una mayuscula
-                'regex:/[0-9]/', // al menos un numero
-                'regex:/[@$!%*?&]/', // al menos un caracter especial
-            ],
             'role' => 'required|string|in:Administrativo,Jefe de carrera,Docente,Superusuario',
-        ], [
-            'password.min' => 'La contraseña debe contener al menos 8 caracteres',
-            'password.regex' => 'La contraseña debe contener al menos un número, una mayúscula, una minúscula o un caracter especial',
-            'password.confirmed' => 'La contraseña no es igual a la ingresada.',
         ]);
+
+        $generatedPassword = $this->generateRandomPassword();
 
         $nameParts = explode(' ', $request->name, 2);
         $firstname = $nameParts[0];
@@ -82,14 +91,14 @@ class UserController extends Controller
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($generatedPassword),
             'role' => $request->role,
             'moodleuser' => $moodleUser,
         ]);
 
         try {
             // Crear usuario en Moodle
-            $moodlePass = $request->password;
+            $moodlePass = $generatedPassword;
             $apikey = Config::get('app.moodle_api_key_matricular');
 
             $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_create_users'
@@ -175,5 +184,41 @@ class UserController extends Controller
     {
         $user->update(['disabled' => 1]);
         return redirect()->route('admin.users.index')->with('success', 'Usuario eliminado correctamente.');
+    }
+
+    public function showChangePasswordForm()
+    {
+        return view('web.admin.users.change_password');
+    }
+
+    // Actualizar contraseña del usuario autenticado
+    public function updatePassword(Request $request)
+    {
+        $user = Auth::user(); // Obtener el usuario autenticado
+
+        // Validar la nueva contraseña
+        $request->validate([
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+                'regex:/[a-z]/',     // al menos una minuscula
+                'regex:/[A-Z]/',     // al menos una mayuscula
+                'regex:/[0-9]/',     // al menos un numero
+                'regex:/[@$!%*?&]/', // al menos un caracter especial
+            ],
+        ], [
+            'password.min' => 'La contraseña debe contener al menos 8 caracteres',
+            'password.regex' => 'La contraseña debe contener al menos un número, una mayúscula, una minúscula y un caracter especial',
+            'password.confirmed' => 'La contraseña no es igual a la ingresada.',
+        ]);
+
+        // Actualizar la contraseña
+        $user->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return redirect()->route('dashboard')->with('success', 'Contraseña actualizada exitosamente.');
     }
 }

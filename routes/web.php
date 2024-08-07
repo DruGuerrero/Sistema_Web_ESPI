@@ -23,7 +23,9 @@ Route::get('/', function () {
 Route::group(['prefix'=> 'admin', 'middleware' => ['auth:sanctum', 'verified']], function(){
 Route::get('Panel-Administrativo', [indexController::class, 'index'])->name('dashboard');
     Route::group(['middleware' => 'superuser'], function() {
-        Route::resource('users', UserController::class)->names('admin.users');
+        Route::resource('users', UserController::class)->except(['show'])->names('admin.users');
+        Route::get('users/change-password', [UserController::class, 'showChangePasswordForm'])->name('admin.users.changePassword');
+        Route::post('users/change-password', [UserController::class, 'updatePassword'])->name('admin.users.updatePassword');
         Route::resource('students', StudentController::class)->names('admin.students');
         Route::get('students/{mediaFile}/download', [StudentController::class, 'download'])->name('admin.students.download');
         Route::delete('students/{mediaFile}/delete', [StudentController::class, 'deleteFile'])->name('admin.students.deleteFile');

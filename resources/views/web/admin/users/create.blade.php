@@ -28,14 +28,6 @@
             <input type="email" name="email" class="form-control" required value="{{ old('email') }}">
         </div>
         <div class="form-group">
-            <label for="password">Contraseña</label>
-            <input type="password" name="password" class="form-control" required>
-        </div>
-        <div class="form-group">
-            <label for="password_confirmation">Confirmar contraseña</label>
-            <input type="password" name="password_confirmation" class="form-control" required>
-        </div>
-        <div class="form-group">
             <label for="role">Rol</label>
             <select name="role" class="form-control" required>
                 <option value="Administrativo" {{ old('role') == 'Administrativo' ? 'selected' : '' }}>Administrativo</option>
