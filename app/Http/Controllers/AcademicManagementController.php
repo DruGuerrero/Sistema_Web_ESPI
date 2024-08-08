@@ -82,10 +82,44 @@ class AcademicManagementController extends Controller
 
     public function show($id)
     {
-        // Obtener la carrera desde la base de datos con sus años y cursos
-        $career = Career::with('years.courses.docente')->findOrFail($id);
+        $career = Career::with('years.courses.docente', 'mediaFiles')->findOrFail($id);
 
         return view('web.admin.academic.show', compact('career'));
+    }
+
+    public function uploadFile(Request $request, Career $career)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ]);
+
+        $path = $request->file('file')->store('media_files', 'public');
+
+        MediaFile::create([
+            'id_career' => $career->id,
+            'type' => 'Horario académico',
+            'file' => $path,
+        ]);
+
+        return redirect()->route('admin.academic.show', $career->id)->with('success', 'Archivo subido exitosamente.');
+    }
+
+    public function downloadFile(MediaFile $mediaFile)
+    {
+        $pathToFile = storage_path('app/public/' . $mediaFile->file);
+        return response()->download($pathToFile);
+    }
+
+    public function deleteFile(MediaFile $mediaFile)
+    {
+        $filePath = storage_path('app/public/' . $mediaFile->file);
+        if (file_exists($filePath)) {
+            unlink($filePath);
+        }
+
+        $mediaFile->delete();
+
+        return redirect()->back()->with('success', 'Archivo eliminado exitosamente.');
     }
 
     public function createYear($career_id)

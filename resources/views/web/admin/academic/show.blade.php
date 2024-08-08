@@ -38,7 +38,56 @@
             @endforeach
         </div>
     </div>
-    <a href="{{ route('admin.academic.index') }}" class="btn btn-primary">Volver</a>
+
+    <!-- Sección para subir archivos -->
+    <div class="max-w-4xl mx-auto mt-8">
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="bg-gray-200 px-4 py-2">
+                <h3 class="text-lg font-semibold">Archivos de la Carrera</h3>
+            </div>
+            <div class="p-4">
+                <form action="{{ route('admin.academic.upload_file', $career->id) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                    @csrf
+                    <div class="form-group">
+                        <label for="file" class="block text-gray-700">Subir archivo:</label>
+                        <input type="file" name="file" class="form-control mt-1 block w-full" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Subir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto mt-8">
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <div class="bg-gray-200 px-4 py-2">
+                <h3 class="text-lg font-semibold">Archivos Subidos</h3>
+            </div>
+            <div class="p-4">
+                @if($career->mediaFiles->isEmpty())
+                    <p class="text-gray-600">No hay archivos subidos para esta carrera.</p>
+                @else
+                    <ul class="list-disc list-inside">
+                        @foreach($career->mediaFiles as $file)
+                            <li class="mb-2 flex justify-between items-center">
+                                <span>{{ $file->type }}</span>
+                                <div>
+                                    <a href="{{ route('admin.academic.download_file', $file->id) }}" class="btn btn-primary btn-sm">Descargar</a>
+                                    <form action="{{ route('admin.academic.delete_file', $file->id) }}" method="POST" class="inline-block">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger btn-sm">Eliminar</button>
+                                    </form>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <a href="{{ route('admin.academic.index') }}" class="btn btn-primary mt-4">Volver</a>
 
     <!-- Modal para editar carrera -->
     <div class="modal fade" id="editCareerModal" tabindex="-1" role="dialog" aria-labelledby="editCareerModalLabel" aria-hidden="true">
@@ -123,6 +172,7 @@
                     }
                 });
             });
+
             // Guardar cambios de carrera
             $('#saveCareerChanges').on('click', function() {
                 $('#editCareerForm').submit();

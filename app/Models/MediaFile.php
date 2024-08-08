@@ -12,6 +12,7 @@ class MediaFile extends Model
     protected $fillable = [
         'student_id',
         'id_course',
+        'id_career',
         'type',
         'file',
     ];
@@ -26,5 +27,10 @@ class MediaFile extends Model
     public function course()
     {
         return $this->belongsTo(Course::class, 'id_course');
+    }
+    // Relación muchos a uno con Career (un archivo pertenece a una carrera)
+    public function career()
+    {
+        return $this->belongsTo(Career::class, 'id_career');
     }
 }

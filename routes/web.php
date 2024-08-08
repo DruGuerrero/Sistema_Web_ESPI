@@ -42,6 +42,9 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth:sanctum', 'verified']]
         Route::get('academic/create', [AcademicManagementController::class, 'create'])->name('admin.academic.create');
         Route::post('academic', [AcademicManagementController::class, 'store'])->name('admin.academic.store');
         Route::get('academic/{id}', [AcademicManagementController::class, 'show'])->name('admin.academic.show');
+        Route::post('academic/{career}/upload_file', [AcademicManagementController::class, 'uploadFile'])->name('admin.academic.upload_file');
+        Route::get('academic/download_file/{mediaFile}', [AcademicManagementController::class, 'downloadFile'])->name('admin.academic.download_file');
+        Route::delete('academic/delete_file/{mediaFile}', [AcademicManagementController::class, 'deleteFile'])->name('admin.academic.delete_file');
         Route::get('academic/subcategory/{id}', [AcademicManagementController::class, 'showSubCategory'])->name('admin.academic.show_subcategory')->middleware('moodle.permission');
         Route::get('academic/create_course/{subcategory_id}', [AcademicManagementController::class, 'createCourse'])->name('admin.academic.create_course');
         Route::post('academic/store_course', [AcademicManagementController::class, 'storeCourse'])->name('admin.academic.store_course');
