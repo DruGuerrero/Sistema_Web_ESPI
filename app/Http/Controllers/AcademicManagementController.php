@@ -211,8 +211,15 @@ class AcademicManagementController extends Controller
                 continue;
             }
 
-            $enrolledUsers = $enrolledUsersResponse->json();
-            $uniqueStudents = $uniqueStudents->merge(collect($enrolledUsers)->pluck('id'))->unique();
+            $enrolledUsers = collect($enrolledUsersResponse->json());
+
+            // Filtrar los estudiantes excluyendo los que tienen el roleid = 3 (profesores)
+            $filteredStudents = $enrolledUsers->reject(function ($user) {
+                return collect($user['roles'])->contains('roleid', 3);
+            });
+
+            // Mezclar los IDs de los estudiantes filtrados y asegurarse de que sean únicos
+            $uniqueStudents = $uniqueStudents->merge($filteredStudents->pluck('id'))->unique();
         }
 
         $year->update(['cant_estudiantes' => $uniqueStudents->count()]);
@@ -532,6 +539,10 @@ class AcademicManagementController extends Controller
             } else {
                 $students = collect($response->json());
             }
+
+            $students = $students->reject(function ($student) {
+                return collect($student['roles'])->contains('roleid', 3);
+            });
 
             // Obtener calificaciones promedio para cada estudiante
             $students = $students->map(function ($student) use ($course, $apikey) {

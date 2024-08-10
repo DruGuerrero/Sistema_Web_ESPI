@@ -45,7 +45,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth:sanctum', 'verified']]
         Route::post('academic/{career}/upload_file', [AcademicManagementController::class, 'uploadFile'])->name('admin.academic.upload_file');
         Route::get('academic/download_file/{mediaFile}', [AcademicManagementController::class, 'downloadFile'])->name('admin.academic.download_file');
         Route::delete('academic/delete_file/{mediaFile}', [AcademicManagementController::class, 'deleteFile'])->name('admin.academic.delete_file');
-        Route::get('academic/subcategory/{id}', [AcademicManagementController::class, 'showSubCategory'])->name('admin.academic.show_subcategory')->middleware('moodle.permission');
+        Route::get('academic/subcategory/{id}', [AcademicManagementController::class, 'showSubCategory'])->name('admin.academic.show_subcategory');
         Route::get('academic/create_course/{subcategory_id}', [AcademicManagementController::class, 'createCourse'])->name('admin.academic.create_course');
         Route::post('academic/store_course', [AcademicManagementController::class, 'storeCourse'])->name('admin.academic.store_course');
         Route::get('academic/create_year/{career_id}', [AcademicManagementController::class, 'createYear'])->name('admin.academic.create_year');
@@ -66,8 +66,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth:sanctum', 'verified']]
         Route::get('students/{mediaFile}/download', [StudentController::class, 'download'])->name('admin.students.download');
         Route::delete('students/{mediaFile}/delete', [StudentController::class, 'deleteFile'])->name('admin.students.deleteFile');
         Route::post('students/{student}/matriculate', [StudentController::class, 'matriculate'])
-            ->name('admin.students.matriculate')
-            ->middleware('moodle.permission');
+            ->name('admin.students.matriculate');
+        Route::get('students/{student}/generate-pdf', [StudentController::class, 'generatePDF'])->name('admin.students.generate_pdf');
 
         // Módulo de gestión de pagos
         Route::resource('payments', PaymentController::class)->except(['show'])->names('admin.payments');

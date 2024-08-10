@@ -317,15 +317,16 @@ return [
             'url' => 'admin/blog',
             'can' => 'manage-blog',
         ],
-        [
-            'text' => 'pages',
-            'url' => 'admin/pages',
-            'icon' => 'far fa-fw fa-file',
-            //'label' => 4,
-            'label_color' => 'success',
-        ],
+        // [
+        //     'text' => 'pages',
+        //     'url' => 'admin/pages',
+        //     'icon' => 'far fa-fw fa-file',
+        //     //'label' => 4,
+        //     'label_color' => 'success',
+        // ],
         [   'header' => 'GESTIÓN DE USUARIOS',
             'can' => 'manage-users',
+            'classes' => 'text-bold',
         ],
         [
             'text' => 'Usuarios',
@@ -333,22 +334,31 @@ return [
             'icon' => 'fas fa-fw fa-user',
             'can' => 'manage-users', // Solo visible para Superusuario
         ],
+        [   'header' => 'GESTIÓN ACADÉMICA',
+            'can' => 'manage-students',
+            'can' => 'manage-academic',
+            'classes' => 'text-bold',
+        ],
         [
             'text' => 'Estudiantes',
             'url' => 'admin/students',
-            'icon' => 'fas fa-fw fa-user',
+            'icon' => 'fas fa-fw fa-user-graduate',
             'can' => 'manage-students', // Visible para Superusuario y Administrativo
         ],
         [
             'text' => 'Gestión académica',
             'url' => 'admin/academic',
-            'icon' => 'fas fa-fw fa-user',
+            'icon' => 'fas fa-fw fa-university',
             'can' => 'manage-academic', // Visible para Superusuario, Jefe de carrera y Docente
         ],
+        [   'header' => 'GESTIÓN DE PAGOS',
+            'can' => 'manage-payments',
+            'classes' => 'text-bold',
+        ],
         [
-            'text' => 'Pagos',
+            'text' => 'Control de Pagos',
             'url' => 'admin/payments',
-            'icon' => 'fas fa-fw fa-user',
+            'icon' => 'fas fa-fw fa-money-bill',
             'can' => 'manage-payments', // Visible para Superusuario y Administrativo
         ],        
     ],

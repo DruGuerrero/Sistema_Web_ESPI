@@ -433,6 +433,33 @@ class StudentController extends Controller
         }
     }
 
+    public function generatePDF(Student $student)
+    {
+        // Obtener la foto tipo carnet del estudiante
+        $photo = $student->mediaFiles()->where('type', 'foto_tipo_carnet')->first();
+        $photoPath = $photo ? public_path('storage/' . $photo->file) : public_path('vendor/adminlte/dist/img/default_user.png');
+
+        // Asegurarse de que la imagen existe
+        if (!file_exists($photoPath)) {
+            $photoPath = public_path('vendor/adminlte/dist/img/default_user.png');
+        }
+
+        // Generar el PDF
+        $pdf = PDF::loadView('pdf.student_data', [
+            'student' => $student,
+            'photoPath' => $photoPath
+        ]);
+
+        // Guardar el PDF
+        $fileName = 'Hoja_Datos_' . $student->num_carnet . '.pdf';
+        $path = storage_path('app/public/contracts/' . $fileName);
+
+        $pdf->save($path);
+
+        // Retornar el PDF como respuesta (opcional)
+        return $pdf->download($fileName);
+    }
+
     public function destroy(Student $student)
     {
         $student->delete();
