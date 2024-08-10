@@ -70,7 +70,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth:sanctum', 'verified']]
             ->middleware('moodle.permission');
 
         // Módulo de gestión de pagos
-        Route::resource('payments', PaymentController::class)->names('admin.payments');
+        Route::resource('payments', PaymentController::class)->except(['show'])->names('admin.payments');
         Route::get('payments/show_payments', [PaymentController::class, 'show'])->name('admin.payments.show_payments');
         Route::get('payments/show_products', [PaymentController::class, 'showProducts'])->name('admin.payments.show_products');
         Route::get('payments/show_debts', [PaymentController::class, 'showDebts'])->name('admin.payments.show_debts');
