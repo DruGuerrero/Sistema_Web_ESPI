@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Support\Str;
+use PDF;
 
 class StudentController extends Controller
 {
@@ -377,6 +378,16 @@ class StudentController extends Controller
     
                 Log::info('User enrolled successfully in course', ['course_id' => $enrol['courseid'], 'user_id' => $userId]);
             }
+
+            Log::info('Generando contrato de inscripción para el estudiante', ['student_id' => $student->id]);
+
+            $pdf = PDF::loadView('pdf.contract', compact('student'));
+            $fileName = 'Contrato_Inscripcion_' . $student->num_carnet . '.pdf';
+            $path = storage_path('app/public/contracts/' . $fileName);
+
+            $pdf->save($path);
+
+            Log::info('Contrato de inscripción generado exitosamente', ['file' => $fileName]);
     
             DB::commit();
             Log::info('Transaction committed successfully for student matriculation', ['student_id' => $student->id]);

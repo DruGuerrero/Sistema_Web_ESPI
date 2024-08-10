@@ -50,6 +50,10 @@
                     </ul>
                 @endif
 
+                <a href="{{ asset('storage/contracts/Contrato_Inscripcion_' . $student->num_carnet . '.pdf') }}" class="btn btn-info mt-4">
+                    Descargar Contrato de Inscripción
+                </a>
+
                 <div class="flex justify-between mt-6">
                     <a href="{{ route('admin.students.index') }}" class="btn btn-secondary">Volver</a>
                     <a href="{{ route('admin.students.edit', $student->id) }}" class="btn btn-primary">Editar</a>
