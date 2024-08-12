@@ -54,6 +54,9 @@
                     </div>
                     <button type="submit" class="btn btn-primary">Subir</button>
                 </form>
+                <a href="{{ route('admin.academic.generate_report', $career->id) }}" class="btn btn-info mt-4">
+                    Descargar Reporte de Carrera
+                </a>
             </div>
         </div>
     </div>

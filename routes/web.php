@@ -57,6 +57,8 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth:sanctum', 'verified']]
         Route::get('academic/show_course/{id}', [AcademicManagementController::class, 'showCourse'])->name('admin.academic.show_course');
         Route::put('academic/update_course/{id}', [AcademicManagementController::class, 'updateCourse'])->name('admin.academic.update_course');
         Route::post('academic/refresh_cache/{id}', [AcademicManagementController::class, 'refreshCache'])->name('admin.academic.refresh_cache');
+        Route::get('academic/{career}/generate_report', [AcademicManagementController::class, 'generateCareerReport'])->name('admin.academic.generate_report');
+        Route::get('academic/generate_course_report/{id}', [AcademicManagementController::class, 'generateCourseReport'])->name('admin.academic.generate_course_report');
     });
 
     // Rutas accesibles por Superusuario y Administrativo (Gestión de Estudiantes y Pagos)

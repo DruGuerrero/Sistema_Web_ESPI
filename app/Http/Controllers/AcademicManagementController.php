@@ -14,6 +14,7 @@ use App\Models\Course;
 use App\Models\MediaFile;
 use App\Models\User;
 use App\Models\Enrollment;
+use PDF;
 
 class AcademicManagementController extends Controller
 {
@@ -85,6 +86,16 @@ class AcademicManagementController extends Controller
         $career = Career::with('years.courses.docente', 'mediaFiles')->findOrFail($id);
 
         return view('web.admin.academic.show', compact('career'));
+    }
+
+    public function generateCareerReport($id)
+    {
+        $career = Career::with(['years.courses.docente', 'students'])->findOrFail($id);
+        $students = $career->students;
+
+        $pdf = PDF::loadView('pdf.career_report', compact('career', 'students'));
+        $fileName = 'Reporte_Carrera_' . $career->nombre . '.pdf';
+        return $pdf->download($fileName);
     }
 
     public function uploadFile(Request $request, Career $career)
@@ -521,10 +532,10 @@ class AcademicManagementController extends Controller
     public function showCourse($id)
     {
         $course = Course::with('docente', 'mediaFile')->findOrFail($id);
-
+    
         // Clave para el caché
         $cacheKey = 'course_' . $course->id . '_students';
-
+    
         // Intentar obtener los estudiantes y sus calificaciones del caché
         $students = Cache::remember($cacheKey, 60 * 60, function () use ($course, $cacheKey) {
             $apikey = Config::get('app.moodle_api_key_info_estudiantes');
@@ -532,18 +543,18 @@ class AcademicManagementController extends Controller
                 . '&wstoken=' . urldecode($apikey)
                 . '&courseid=' . $course->id_moodle
             );
-
+    
             if ($response->failed()) {
                 Log::error('Error obteniendo estudiantes inscritos desde Moodle: ' . $response->body());
                 return collect(); // Colección vacía en caso de error
             } else {
                 $students = collect($response->json());
             }
-
+    
             $students = $students->reject(function ($student) {
                 return collect($student['roles'])->contains('roleid', 3);
             });
-
+    
             // Obtener calificaciones promedio para cada estudiante
             $students = $students->map(function ($student) use ($course, $apikey) {
                 $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=gradereport_user_get_grade_items'
@@ -551,7 +562,7 @@ class AcademicManagementController extends Controller
                     . '&courseid=' . $course->id_moodle
                     . '&userid=' . $student['id']
                 );
-
+    
                 if ($response->failed()) {
                     Log::error('Error obteniendo calificaciones desde Moodle: ' . $response->body());
                     $student['average_grade'] = 0; // Valor por defecto en caso de error
@@ -560,25 +571,27 @@ class AcademicManagementController extends Controller
                         ->reject(function ($item) {
                             return $item['itemtype'] === 'course';
                         });
-
+    
                     $totalGrade = $gradeItems->sum('graderaw');
                     $averageGrade = $gradeItems->count() > 0 ? $totalGrade / $gradeItems->count() : 0;
                     $student['average_grade'] = round($averageGrade, 2); // Redondear a dos decimales
-
+    
+                    // Guardar los nombres de las tareas y sus notas
+                    $student['grades'] = $gradeItems->pluck('graderaw', 'itemname')->toArray();
+    
                     // Agregar logs para verificar las calificaciones
-                    Log::info('Calificaciones para el estudiante ' . $student['fullname'] . ': ' . $gradeItems->pluck('graderaw')->toJson());
-                    Log::info('Calificación total: ' . $totalGrade);
-                    Log::info('Calificación promedio: ' . $averageGrade);
+                    Log::info('Calificaciones para el estudiante ' . $student['fullname'] . ': ' . $gradeItems->pluck('graderaw', 'itemname')->toJson());
                 }
-
+    
                 return $student;
             });
-
+            
             return $students;
         });
-
+    
         return view('web.admin.academic.show_course', compact('course', 'students'));
     }
+
     public function updateCourse(Request $request, $id)
     {
         $apikey = Config::get('app.moodle_api_key_info_estudiantes');
@@ -617,6 +630,25 @@ class AcademicManagementController extends Controller
         Cache::forget('course_' . $course->id . '_students');
 
         return redirect()->route('admin.academic.show_course', ['id' => $course->id])->with('success', 'Curso actualizado exitosamente.');
+    }
+
+    public function generateCourseReport($id)
+    {
+        $course = Course::with('docente')->findOrFail($id);
+    
+        // Clave para el caché
+        $cacheKey = 'course_' . $course->id . '_students';
+    
+        // Obtener los estudiantes desde el caché
+        $students = Cache::get($cacheKey, collect());
+    
+        // Obtener las tareas del primer estudiante como referencia
+        $tasks = $students->first()['grades'] ?? [];
+    
+        $pdf = PDF::loadView('pdf.course_report', compact('course', 'students', 'tasks'));
+    
+        $fileName = 'Reporte_Curso_' . $course->nombre . '.pdf';
+        return $pdf->download($fileName);
     }
 
     public function refreshCache($id)

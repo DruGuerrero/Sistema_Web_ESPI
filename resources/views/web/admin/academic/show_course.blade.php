@@ -13,11 +13,16 @@
 
 @section('content')
     <div class="d-flex justify-content-between px-2.5">
-        <p>{{ $course->descripcion }}</p>
+        <p>{{ $course->descripcion }}</p>       
         <form id="refreshCacheForm" action="{{ route('admin.academic.refresh_cache', ['id' => $course->id]) }}" method="POST" style="display: inline;">
             @csrf
             <button type="submit" class="btn btn-secondary">Actualizar</button>
         </form>
+    </div>
+    <div class="d-flex justify-end px-2.5 py-2">
+        <a href="{{ route('admin.academic.generate_course_report', ['id' => $course->id]) }}" class="btn btn-info mb-3">
+            Descargar Reporte del Curso
+        </a>
     </div>
     @php
         $headers = ['N°', 'Nombre', 'Promedio'];
