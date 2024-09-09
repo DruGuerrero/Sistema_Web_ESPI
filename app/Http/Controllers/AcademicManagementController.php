@@ -293,7 +293,7 @@ class AcademicManagementController extends Controller
         $request->validate([
             'fullname' => 'required|string|max:255',
             'description' => 'required|string',
-            'image' => 'required|file|mimes:jpg,jpeg,png|max:2048', // Asegurarse de que el tamaño del archivo sea razonable
+            'image' => 'required|file|mimes:jpg,jpeg,png|max:2048',
             'teacher' => 'required|integer',
         ]);
 

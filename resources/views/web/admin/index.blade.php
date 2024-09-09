@@ -11,7 +11,7 @@
     <p>Bienvenido al panel administrativo del Instituto ESPI Bolivia.</p>
 
     <!-- Uso del componente Livewire DonutChart -->
-    <livewire:donut-chart :series="[47, 23, 30]" :labels="['Tailwind CSS', 'Preline UI', 'Others']" id="chart1" />
+    {{-- <livewire:donut-chart :series="[47, 23, 30]" :labels="['Tailwind CSS', 'Preline UI', 'Others']" id="chart1" /> --}}
 @stop
 
 @section('css')
