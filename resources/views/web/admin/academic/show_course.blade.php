@@ -23,7 +23,10 @@
         <a href="{{ route('admin.academic.generate_course_report', ['id' => $course->id]) }}" class="btn btn-info mb-3">
             Descargar Reporte del Curso
         </a>
-    </div>
+        <a href="{{ route('admin.academic.generate_teacher_report_by_course', ['id' => $course->id]) }}" class="btn btn-info mb-3 ml-2">
+            Descargar Reporte del Docente
+        </a>
+    </div>    
     @php
         $headers = ['N°', 'Nombre', 'Promedio'];
         $rows = $students->map(function ($student, $index) {

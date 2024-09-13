@@ -651,6 +651,24 @@ class AcademicManagementController extends Controller
         return $pdf->download($fileName);
     }
 
+    public function generateTeacherReportByCourse($course_id)
+    {
+        // Obtener el curso con su docente
+        $course = Course::with('docente')->findOrFail($course_id);
+    
+        $teacher = $course->docente;
+    
+        if (!$teacher) {
+            return redirect()->back()->withErrors(['error' => 'No se encontró el docente asignado a este curso.']);
+        }
+    
+        // Generar el PDF usando una plantilla Blade
+        $pdf = PDF::loadView('pdf.teacher_report', compact('teacher', 'course'));
+    
+        $fileName = 'Reporte_Docente_' . $teacher->name . '.pdf';
+        return $pdf->download($fileName);
+    }    
+
     public function refreshCache($id)
     {
         $course = Course::findOrFail($id);
