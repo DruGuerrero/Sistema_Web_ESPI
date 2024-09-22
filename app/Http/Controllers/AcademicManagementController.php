@@ -299,7 +299,7 @@ class AcademicManagementController extends Controller
 
         $yearId = $request->input('subcategory_id');
         $fullname = $request->input('fullname');
-        $shortname = substr($fullname, 0, 4) . $yearId;
+        $shortname = $fullname;
         $summary = $request->input('description');
         $teacherId = $request->input('teacher');
 
