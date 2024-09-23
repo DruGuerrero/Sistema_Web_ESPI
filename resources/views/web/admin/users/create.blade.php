@@ -1,6 +1,6 @@
 @extends('adminlte::page')
 
-@section('title', 'Create User')
+@section('title', 'Crear usuario')
 
 @section('content_header')
     @vite(['resources/css/app.css','resources/js/app.js'])
