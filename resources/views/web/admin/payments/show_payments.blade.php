@@ -22,6 +22,7 @@
                 <button class="btn btn-primary" type="submit">Buscar</button>
             </span>
         </div>
+    
         <div class="form-group mr-2">
             <select name="product" class="form-control">
                 <option value="">Seleccione un servicio o bien</option>
@@ -30,10 +31,25 @@
                 @endforeach
             </select>
         </div>
+    
+        <!-- Filtro de rango de fechas -->
+        <div class="input-group mr-2">
+            <label for="start_date" class="mr-2">Desde</label>
+            <input type="date" name="start_date" class="form-control" value="{{ request()->input('start_date') }}">
+        </div>
+    
+        <div class="input-group mr-2">
+            <label for="end_date" class="mr-2">Hasta</label>
+            <input type="date" name="end_date" class="form-control" value="{{ request()->input('end_date') }}">
+        </div>
+    
         <span class="input-group-btn">
             <button class="btn btn-primary" type="submit">Filtrar</button>
         </span>
-    </form>
+        <span class="input-group-btn px-2">
+            <a href="{{ route('admin.payments.show_payments') }}" class="btn btn-secondary">Limpiar</a>
+        </span>
+    </form>    
 
     @if($payments->isEmpty())
         <div class="d-flex justify-content-center align-items-center" style="height: 200px;">
@@ -43,13 +59,14 @@
         </div>
     @else
         @php
-            $headers = ['Nro', 'Estudiante', 'Servicio/Bien', 'Monto'];
+            $headers = ['Nro', 'Estudiante', 'Servicio/Bien', 'Monto', 'Fecha de Pago'];
             $rows = $payments->map(function ($payment, $index) use ($payments) {
                 return [
                     $payments->firstItem() + $index,
                     $payment->student->nombre . ' ' . $payment->student->apellido_paterno . ' ' . $payment->student->apellido_materno,
                     $payment->product->nombre,
                     $payment->monto_pagado . ' Bs',
+                    $payment->created_at->format('d/m/Y'), // Formatear la fecha de pago
                 ];
             })->toArray();
         @endphp

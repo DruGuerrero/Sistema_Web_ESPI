@@ -26,6 +26,9 @@ class PaymentController extends Controller
 
         $search = $request->input('search');
         $productId = $request->input('product');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+    
         $query = Payment::with(['student', 'product']);
 
         if ($search) {
@@ -39,6 +42,15 @@ class PaymentController extends Controller
         if ($productId) {
             Log::info('Product ID for filtering: ' . $productId);
             $query->where('id_product', $productId);
+        }
+
+        // Filtro por fecha
+        if ($startDate && $endDate) {
+            $query->whereBetween('created_at', [$startDate, $endDate]);
+        } elseif ($startDate) {
+            $query->whereDate('created_at', '>=', $startDate);
+        } elseif ($endDate) {
+            $query->whereDate('created_at', '<=', $endDate);
         }
 
         $payments = $query->paginate(10);
