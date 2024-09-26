@@ -27,6 +27,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'moodleuser',
+        'role',
+        'disabled',
     ];
 
     /**
@@ -48,7 +51,13 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'disabled' => 'boolean',
     ];
+
+    public function scopeEnabled($query)
+    {
+        return $query->where('disabled', 0);
+    }
 
     /**
      * The accessors to append to the model's array form.
@@ -58,4 +67,9 @@ class User extends Authenticatable
     protected $appends = [
         'profile_photo_url',
     ];
+    // Relación uno a muchos con Course (un docente puede estar asignado a varios cursos)
+    public function courses()
+    {
+        return $this->hasMany(Course::class, 'id_docente');
+    }
 }

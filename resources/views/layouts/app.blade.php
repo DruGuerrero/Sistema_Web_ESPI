@@ -16,6 +16,8 @@
 
         <!-- Styles -->
         @livewireStyles
+
+        <link rel="stylesheet" href="./node_modules/apexcharts/dist/apexcharts.css">
     </head>
     <body class="font-sans antialiased">
         <x-banner />
@@ -41,5 +43,8 @@
         @stack('modals')
 
         @livewireScripts
+
+        <script src="./node_modules/lodash/lodash.min.js"></script>
+        <script src="./node_modules/apexcharts/dist/apexcharts.min.js"></script>
     </body>
 </html>

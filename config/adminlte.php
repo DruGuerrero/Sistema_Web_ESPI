@@ -63,8 +63,8 @@ return [
     |
     */
 
-    'logo' => '<b>Admin</b>LTE',
-    'logo_img' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
+    'logo' => '<b>ESPI</b> Bolivia',
+    'logo_img' => 'vendor/adminlte/dist/img/espi_bolivia_logo.png',
     'logo_img_class' => 'brand-image img-circle elevation-3',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
@@ -110,14 +110,14 @@ return [
     */
 
     'preloader' => [
-        'enabled' => true,
+        'enabled' => false,
         'mode' => 'fullscreen',
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/AdminLTELogo.png',
+            'path' => 'vendor/adminlte/dist/img/espi_bolivia_logo.png',
             'alt' => 'AdminLTE Preloader Image',
             'effect' => 'animation__shake',
-            'width' => 60,
-            'height' => 60,
+            'width' => 100,
+            'height' => 100,
         ],
     ],
 
@@ -257,7 +257,7 @@ return [
     */
 
     'use_route_url' => false,
-    'dashboard_url' => 'home',
+    'dashboard_url' => 'admin/Panel-Administrativo', //Icono de ESPI Bolivia que va al inicio
     'logout_url' => 'logout',
     'login_url' => 'login',
     'register_url' => 'register',
@@ -295,11 +295,13 @@ return [
 
     'menu' => [
         // Navbar items:
+        /*
         [
             'type' => 'navbar-search',
             'text' => 'search',
             'topnav_right' => true,
         ],
+        */
         [
             'type' => 'fullscreen-widget',
             'topnav_right' => true,
@@ -308,85 +310,57 @@ return [
         // Sidebar items:
         [
             'type' => 'sidebar-menu-search',
-            'text' => 'search',
+            'text' => 'Buscar',
         ],
         [
             'text' => 'blog',
             'url' => 'admin/blog',
             'can' => 'manage-blog',
         ],
-        [
-            'text' => 'pages',
-            'url' => 'admin/pages',
-            'icon' => 'far fa-fw fa-file',
-            'label' => 4,
-            'label_color' => 'success',
+        // [
+        //     'text' => 'pages',
+        //     'url' => 'admin/pages',
+        //     'icon' => 'far fa-fw fa-file',
+        //     //'label' => 4,
+        //     'label_color' => 'success',
+        // ],
+        [   'header' => 'GESTIÓN DE USUARIOS',
+            'can' => 'manage-users',
+            'classes' => 'text-bold',
         ],
-        ['header' => 'account_settings'],
         [
-            'text' => 'profile',
-            'url' => 'admin/settings',
+            'text' => 'Usuarios',
+            'url' => 'admin/users',
             'icon' => 'fas fa-fw fa-user',
+            'can' => 'manage-users', // Solo visible para Superusuario
+        ],
+        [   'header' => 'GESTIÓN ACADÉMICA',
+            'can' => 'manage-students',
+            'can' => 'manage-academic',
+            'classes' => 'text-bold',
         ],
         [
-            'text' => 'change_password',
-            'url' => 'admin/settings',
-            'icon' => 'fas fa-fw fa-lock',
+            'text' => 'Estudiantes',
+            'url' => 'admin/students',
+            'icon' => 'fas fa-fw fa-user-graduate',
+            'can' => 'manage-students', // Visible para Superusuario y Administrativo
         ],
         [
-            'text' => 'multilevel',
-            'icon' => 'fas fa-fw fa-share',
-            'submenu' => [
-                [
-                    'text' => 'level_one',
-                    'url' => '#',
-                ],
-                [
-                    'text' => 'level_one',
-                    'url' => '#',
-                    'submenu' => [
-                        [
-                            'text' => 'level_two',
-                            'url' => '#',
-                        ],
-                        [
-                            'text' => 'level_two',
-                            'url' => '#',
-                            'submenu' => [
-                                [
-                                    'text' => 'level_three',
-                                    'url' => '#',
-                                ],
-                                [
-                                    'text' => 'level_three',
-                                    'url' => '#',
-                                ],
-                            ],
-                        ],
-                    ],
-                ],
-                [
-                    'text' => 'level_one',
-                    'url' => '#',
-                ],
-            ],
+            'text' => 'Gestión académica',
+            'url' => 'admin/academic',
+            'icon' => 'fas fa-fw fa-university',
+            'can' => 'manage-academic', // Visible para Superusuario, Jefe de carrera y Docente
         ],
-        ['header' => 'labels'],
-        [
-            'text' => 'important',
-            'icon_color' => 'red',
-            'url' => '#',
+        [   'header' => 'GESTIÓN DE PAGOS',
+            'can' => 'manage-payments',
+            'classes' => 'text-bold',
         ],
         [
-            'text' => 'warning',
-            'icon_color' => 'yellow',
-            'url' => '#',
-        ],
-        [
-            'text' => 'information',
-            'icon_color' => 'cyan',
-            'url' => '#',
-        ],
+            'text' => 'Control de Pagos',
+            'url' => 'admin/payments',
+            'icon' => 'fas fa-fw fa-money-bill',
+            'can' => 'manage-payments', // Visible para Superusuario y Administrativo
+        ],        
     ],
 
     /*
