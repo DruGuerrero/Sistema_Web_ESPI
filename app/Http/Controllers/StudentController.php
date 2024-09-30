@@ -378,17 +378,6 @@ class StudentController extends Controller
     
                 Log::info('User enrolled successfully in course', ['course_id' => $enrol['courseid'], 'user_id' => $userId]);
             }
-
-            Log::info('Generando contrato de inscripción para el estudiante', ['student_id' => $student->id]);
-
-            $pdf = PDF::loadView('pdf.contract', compact('student'));
-            $fileName = 'Contrato_Inscripcion_' . $student->num_carnet . '.pdf';
-            $path = storage_path('app/public/contracts/' . $fileName);
-
-            $pdf->save($path);
-
-            Log::info('Contrato de inscripción generado exitosamente', ['file' => $fileName]);
-    
             DB::commit();
             Log::info('Transaction committed successfully for student matriculation', ['student_id' => $student->id]);
     
@@ -431,6 +420,19 @@ class StudentController extends Controller
     
             return response()->json(['error' => $e->getMessage()], 500);
         }
+    }
+
+    public function generateContractPDF(Student $student)
+    {
+        Log::info('Generando contrato de inscripción para el estudiante', ['student_id' => $student->id]);
+    
+        // Generar el PDF en memoria sin guardarlo
+        $pdf = PDF::loadView('pdf.contract', compact('student'));
+    
+        $fileName = 'Contrato_Inscripcion_' . $student->num_carnet . '.pdf';
+    
+        // Descargar el PDF directamente
+        return $pdf->download($fileName);
     }
 
     public function generatePDF(Student $student)

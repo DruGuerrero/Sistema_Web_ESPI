@@ -54,7 +54,7 @@
                     Descargar Hoja de Datos
                 </a>                
 
-                <a href="{{ asset('storage/contracts/Contrato_Inscripcion_' . $student->num_carnet . '.pdf') }}" class="btn btn-info mt-4">
+                <a href="{{ route('admin.students.generate_contract', $student->id) }}" class="btn btn-info mt-4">
                     Ver Contrato de Inscripción
                 </a>
 

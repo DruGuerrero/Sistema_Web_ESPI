@@ -71,6 +71,7 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth:sanctum', 'verified']]
         Route::post('students/{student}/matriculate', [StudentController::class, 'matriculate'])
             ->name('admin.students.matriculate');
         Route::get('students/{student}/generate-pdf', [StudentController::class, 'generatePDF'])->name('admin.students.generate_pdf');
+        Route::get('students/{student}/generate-contract', [StudentController::class, 'generateContractPDF'])->name('admin.students.generate_contract');
 
         // Módulo de gestión de pagos
         Route::resource('payments', PaymentController::class)->except(['show'])->names('admin.payments');
