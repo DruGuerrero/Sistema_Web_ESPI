@@ -41,8 +41,8 @@
                     </div>
 
                     <div class="flex justify-between mt-6">
-                        <a href="{{ route('dashboard') }}" class="btn btn-secondary">Cancelar</a>
                         <button type="submit" class="btn btn-success">Actualizar Contraseña</button>
+                        <a href="{{ route('dashboard') }}" class="btn btn-secondary">Cancelar</a>
                     </div>
                 </div>
             </form>
