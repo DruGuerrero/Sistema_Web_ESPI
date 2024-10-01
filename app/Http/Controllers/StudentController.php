@@ -117,13 +117,72 @@ class StudentController extends Controller
             'documentos_estudiante' => 'nullable|file|mimes:pdf,jpg,jpeg,png',
             'foto_tipo_carnet' => 'nullable|file|mimes:jpg,jpeg,png',
         ]);
-
+    
         $data = $request->all();
         $data['matricula'] = $student->matricula;
         $data['disabled'] = $request->has('disabled') ? 0 : 1;
-
+    
+        // Actualizar datos del estudiante
         $student->update($data);
-
+    
+        // Si el estudiante ha sido deshabilitado (disabled == 1), eliminar de Moodle
+        if ($student->disabled == 1) {
+            try {
+                // Obtener el moodle_user del estudiante
+                $moodleUser = $student->moodle_user;
+                $apikey = Config::get('app.moodle_api_key_matricular');
+    
+                // Verificar si el usuario existe en Moodle
+                $response = Http::retry(3, 1000)->get(
+                    'https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_get_users'
+                    . '&wstoken=' . urldecode($apikey)
+                    . '&criteria[0][key]=username'
+                    . '&criteria[0][value]=' . urlencode($moodleUser)
+                );
+    
+                if ($response->failed()) {
+                    Log::error('Error al verificar la existencia del usuario en Moodle: ' . $response->body());
+                    throw new \Exception('Error verificando existencia del usuario en Moodle');
+                }
+    
+                $moodleData = $response->json();
+    
+                // Verificar si el usuario existe en Moodle
+                if (isset($moodleData['users'][0]['id'])) {
+                    $moodleUserId = $moodleData['users'][0]['id']; // Guardar el ID del usuario en Moodle
+    
+                    // Eliminar el usuario en Moodle
+                    $deleteResponse = Http::retry(3, 1000)->post(
+                        'https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_delete_users'
+                        . '&wstoken=' . urldecode($apikey)
+                        . '&userids[0]=' . urlencode($moodleUserId)
+                    );
+    
+                    if ($deleteResponse->failed()) {
+                        Log::error('Error al eliminar el usuario en Moodle: ' . $deleteResponse->body());
+                        throw new \Exception('Error eliminando usuario en Moodle');
+                    }
+    
+                    Log::info('Usuario eliminado correctamente de Moodle', ['moodle_user' => $moodleUser]);
+    
+                    // Actualizar los campos moodle_user, moodle_pass y matricula
+                    $student->update([
+                        'moodle_user' => null,
+                        'moodle_pass' => null,
+                        'matricula' => 'NO',
+                    ]);
+    
+                    Log::info('Estado del estudiante actualizado: moodle_user, moodle_pass a null, matricula a NO', ['student_id' => $student->id]);
+                } else {
+                    Log::warning('Usuario no encontrado en Moodle: ' . $moodleUser);
+                }
+            } catch (\Exception $e) {
+                Log::error('Error procesando eliminación de estudiante en Moodle: ' . $e->getMessage());
+                return redirect()->route('admin.students.index')->with('error', 'Error al eliminar estudiante en Moodle.');
+            }
+        }
+    
+        // Manejo de archivos de documentos del estudiante y foto tipo carnet
         if ($request->hasFile('documentos_estudiante')) {
             $path = $request->file('documentos_estudiante')->store('media_files', 'public');
             MediaFile::create([
@@ -132,6 +191,7 @@ class StudentController extends Controller
                 'file' => $path,
             ]);
         }
+    
         if ($request->hasFile('foto_tipo_carnet')) {
             // Verificar si ya hay una foto tipo carnet existente
             $existingPhoto = $student->mediaFiles()->where('type', 'foto_tipo_carnet')->first();
@@ -143,7 +203,7 @@ class StudentController extends Controller
                 }
                 $existingPhoto->delete();
             }
-
+    
             // Guardar la nueva foto tipo carnet
             $path = $request->file('foto_tipo_carnet')->store('media_files', 'public');
             MediaFile::create([
@@ -152,9 +212,9 @@ class StudentController extends Controller
                 'file' => $path,
             ]);
         }
-
+    
         return redirect()->route('admin.students.index')->with('success', 'Estudiante actualizado exitosamente.');
-    }
+    }    
 
     public function download(MediaFile $mediaFile)
     {
