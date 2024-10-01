@@ -27,11 +27,11 @@
                 @csrf
                 <div class="form-group">
                     <label for="name">Nombre</label>
-                    <input type="text" name="name" class="form-control" required value="{{ old('name') }}">
+                    <input type="text" name="name" placeholder="Nombre completo" class="form-control" required value="{{ old('name') }}">
                 </div>
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" name="email" class="form-control" required value="{{ old('email') }}">
+                    <input type="email" name="email" placeholder="ejemplo@ejemplo.com" class="form-control" required value="{{ old('email') }}">
                 </div>
                 <div class="form-group">
                     <label for="role">Rol</label>
@@ -42,8 +42,10 @@
                         <option value="Superusuario" {{ old('role') == 'Superusuario' ? 'selected' : '' }}>Superusuario</option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-success">Crear</button>
-                <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Cancelar</a>
+                <div class="flex justify-between mt-6">
+                    <button type="submit" class="btn btn-success">Crear</button>
+                    <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Cancelar</a>
+                </div>
             </form>
         </div>
     </div>    
