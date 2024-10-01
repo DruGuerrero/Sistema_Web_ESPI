@@ -159,22 +159,71 @@ class UserController extends Controller
             'password.regex' => 'La contraseña debe contener al menos un número, una mayúscula, una minúscula o un caracter especial',
             'password.confirmed' => 'La contraseña no es igual a la ingresada.',
         ]);
-
+    
         $data = [
             'name' => $request->name,
             'email' => $request->email,
             'role' => $request->role,
-            'disabled' => $request->has('disabled') ? 0 : 1,
+            'disabled' => $request->has('disabled') ? 0 : 1, // 0 = habilitado, 1 = deshabilitado
         ];
-
+    
         if ($request->password) {
             $data['password'] = Hash::make($request->password);
         }
-
+    
+        // Actualizar el usuario en la base de datos
         $user->update($data);
-        
+    
+        // Si el usuario fue deshabilitado (disabled == 1), eliminar en Moodle
+        if ($user->disabled == 1) {
+            try {
+                // Obtener la API Key de configuración
+                $apikey = Config::get('app.moodle_api_key_matricular');
+                $moodleUser = $user->moodleuser; // Obtener el moodleuser del usuario
+    
+                // Verificar la existencia del usuario en Moodle
+                $response = Http::retry(3, 1000)->get(
+                    'https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_get_users'
+                    . '&wstoken=' . urldecode($apikey)
+                    . '&criteria[0][key]=username'
+                    . '&criteria[0][value]=' . urlencode($moodleUser)
+                );
+    
+                if ($response->failed()) {
+                    Log::error('Error al verificar existencia de usuario en Moodle: ' . $response->body());
+                    throw new \Exception('Error checking user existence in Moodle');
+                }
+    
+                $moodleData = $response->json();
+    
+                // Verificar si el usuario existe en Moodle y tiene un ID asignado
+                if (isset($moodleData['users'][0]['id'])) {
+                    $moodleUserId = $moodleData['users'][0]['id']; // Guardar el ID del usuario de Moodle
+    
+                    // Eliminar el usuario en Moodle
+                    $deleteResponse = Http::retry(3, 1000)->post(
+                        'https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_delete_users'
+                        . '&wstoken=' . urldecode($apikey)
+                        . '&userids[0]=' . urlencode($moodleUserId)
+                    );
+    
+                    if ($deleteResponse->failed()) {
+                        Log::error('Error eliminando usuario en Moodle: ' . $deleteResponse->body());
+                        throw new \Exception('Error deleting user in Moodle');
+                    }
+    
+                    Log::info('Usuario eliminado correctamente de Moodle: ' . $moodleUser);
+                } else {
+                    Log::warning('Usuario no encontrado en Moodle: ' . $moodleUser);
+                }
+            } catch (\Exception $e) {
+                Log::error('Error procesando eliminación de usuario en Moodle: ' . $e->getMessage());
+                return redirect()->route('admin.users.index')->with('error', 'Error al eliminar usuario en Moodle.');
+            }
+        }
+    
         return redirect()->route('admin.users.index')->with('success', 'Usuario actualizado exitosamente.');
-    }
+    }    
 
     public function destroy(User $user)
     {
