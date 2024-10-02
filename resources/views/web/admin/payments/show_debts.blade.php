@@ -107,9 +107,9 @@
                                 currency="BOB"
                             />
                         </div>
-                        <div class="modal-footer">
+                        <div class="modal-footer flex justify-between mt-6">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                            <button type="submit" class="btn btn-primary">Registrar Pago</button>
+                            <button type="submit" class="btn btn-success">Registrar Pago</button>
                         </div>
                     </form>
                 </div>
