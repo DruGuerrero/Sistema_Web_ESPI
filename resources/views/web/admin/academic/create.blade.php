@@ -28,7 +28,7 @@
                 <div class="grid grid-cols-1 gap-1">
                     <div class="form-group">
                         <label for="name" class="block font-medium text-gray-700">Nombre:</label>
-                        <input type="text" name="name" class="form-control mt-1 block w-full" required>
+                        <input type="text" name="name" placeholder="Nombre de la carrera" class="form-control mt-1 block w-full" required>
                     </div>
 
                     <div class="form-group">
@@ -36,9 +36,9 @@
                         <textarea name="description" class="form-control mt-1 block w-full" rows="5" required></textarea>
                     </div>
 
-                    <div class="flex justify-end mt-6">
+                    <div class="flex justify-between mt-6">
                         <a href="{{ route('admin.academic.index') }}" class="btn btn-secondary mr-2">Cancelar</a>
-                        <button type="submit" class="btn btn-primary">Agregar</button>
+                        <button type="submit" class="btn btn-success">Agregar</button>
                     </div>
                 </div>
             </form>

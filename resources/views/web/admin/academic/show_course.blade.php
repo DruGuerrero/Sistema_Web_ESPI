@@ -65,9 +65,9 @@
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer flex justify-between mt-6">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="saveCourseChanges">Actualizar</button>
+                    <button type="button" class="btn btn-success" id="saveCourseChanges">Actualizar</button>
                 </div>
             </div>
         </div>

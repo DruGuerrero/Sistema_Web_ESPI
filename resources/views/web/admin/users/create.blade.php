@@ -43,8 +43,8 @@
                     </select>
                 </div>
                 <div class="flex justify-between mt-6">
-                    <button type="submit" class="btn btn-success">Crear</button>
                     <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-success">Crear</button>
                 </div>
             </form>
         </div>

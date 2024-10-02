@@ -71,6 +71,7 @@
                     <div class="form-group">
                         <label for="career" class="block font-medium text-gray-700">Carrera:</label>
                         <select name="career_id" class="form-control block w-full" required>
+                            <option value="">Seleccione una carrera</option>
                             @foreach ($careers as $career)
                                 <option value="{{ $career->id }}">{{ $career->nombre }}</option>
                             @endforeach
