@@ -28,12 +28,12 @@
                 <div class="grid grid-cols-1 gap-1">
                     <div class="form-group">
                         <label for="fullname" class="block font-medium text-gray-700">Nombre:</label>
-                        <input type="text" name="fullname" placeholder= "Nombre del curso" class="form-control mt-1 block w-full" required>
+                        <input type="text" name="fullname" placeholder= "Nombre del curso" class="form-control mt-1 block w-full" required value="{{ old('fullname') }}">
                     </div>
 
                     <div class="form-group">
                         <label for="description" class="block font-medium text-gray-700">Descripción:</label>
-                        <textarea name="description" class="form-control mt-1 block w-full" rows="5" required></textarea>
+                        <textarea name="description" class="form-control mt-1 block w-full" rows="5" required value="{{ old('description') }}"></textarea>
                     </div>
 
                     <div class="form-group">

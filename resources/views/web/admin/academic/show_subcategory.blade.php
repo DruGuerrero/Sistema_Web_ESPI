@@ -11,7 +11,6 @@
     <hr>
 @stop
 
-
 @section('content')
     <div class="d-flex justify-content-between mb-3">
         <div>
@@ -20,8 +19,18 @@
         <div>
             <span class="px-3">{{ $year->cant_estudiantes }} estudiantes</span>
             <a href="{{ route('admin.academic.create_course', ['subcategory_id' => $year->id]) }}" class="btn btn-primary mb-3">Agregar curso</a>
+            
+            <!-- Mostrar el botón solo si el año es "Primer Año" -->
+            @if ($year->nombre === 'Primer año')
+                <!-- Botón para matricular estudiantes al Segundo Año -->
+                <form id="enrollSecondYearForm" action="{{ route('admin.academic.enroll_second_year', ['id' => $year->id]) }}" method="POST" style="display: inline;">
+                    @csrf
+                    <button type="submit" class="btn btn-success">Matricular al Segundo Año</button>
+                </form>
+            @endif
         </div>
     </div>
+
     <div class="flex flex-wrap justify-center items-center">
         <div class="row">
             @foreach($courses as $course)
@@ -31,24 +40,16 @@
                         image="{{ $course['image'] }}"
                         content="{{ $course['description'] }}"
                         :contentBlocks="[['name' => 'Docente', 'professor' => $course['professor']]]"
-                        leftButtonLink="{{ $course['id'] }}" {{-- Pasar el ID del elemento --}}
+                        leftButtonLink="{{ $course['id'] }}"
                         leftButtonText="Eliminar"
                         rightButtonLink="{{ route('admin.academic.show_course', ['id' => $course['id']]) }}"
                         rightButtonText="Ver"
                     />
-                    {{-- Log para verificar los datos pasados al componente --}}
-                    @php
-                        Log::info('Course Data Passed to Component:', [
-                            'name' => $course['name'],
-                            'image' => $course['image'],
-                            'description' => $course['description'],
-                            'professor' => $course['professor']
-                        ]);
-                    @endphp
                 </div>
             @endforeach
         </div>
     </div>
+
     <a href="{{ route('admin.academic.show', ['id' => $year->id_career]) }}" class="btn btn-primary">Volver</a>
 
     <!-- Modal para editar año académico -->
@@ -82,7 +83,28 @@
             </div>
         </div>
     </div>
-    <!-- Modal de confirmación -->
+
+    <!-- Modal de confirmación de matriculación -->
+    <div class="modal fade" id="enrollSuccessModal" tabindex="-1" role="dialog" aria-labelledby="enrollSuccessModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="enrollSuccessModalLabel">Matriculación exitosa</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Todos los estudiantes han sido matriculados correctamente al Segundo Año.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación de eliminación -->
     <div class="modal fade" id="deleteItemModal" tabindex="-1" role="dialog" aria-labelledby="deleteItemModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -106,10 +128,10 @@
 @stop
 
 @section('js')
-    @if (session('moodleUserData'))
+    @if (session('enroll_success'))  <!-- Solo detectar mensaje de éxito para la matriculación al Segundo Año -->
         <script>
             $(document).ready(function() {
-                $('#moodleUserModal').modal('show');
+                $('#enrollSuccessModal').modal('show');  <!-- Mostrar el modal al cargar la página -->
             });
         </script>
     @endif
@@ -121,7 +143,7 @@
             $('#confirmDeleteButton').data('item-id', itemId);
             $('#deleteItemModal').modal('show');
         }
-    
+
         $(document).ready(function() {
             // Confirmar eliminación del elemento
             $('#confirmDeleteButton').on('click', function() {
@@ -147,5 +169,5 @@
                 $('#editYearForm').submit();
             });
         });
-    </script>    
+    </script>
 @stop
