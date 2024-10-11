@@ -402,7 +402,7 @@ class StudentController extends Controller
     
             if ($coursesResponse->failed()) {
                 Log::error('Error obteniendo cursos de Moodle: ' . $coursesResponse->body());
-                throw new \Exception('Error fetching courses from Moodle');
+                throw new \Exception('Error obteniendo cursos de Moodle');
             }
     
             $courses = $coursesResponse->json()['courses'];

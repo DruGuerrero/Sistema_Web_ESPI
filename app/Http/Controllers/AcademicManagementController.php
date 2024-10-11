@@ -678,4 +678,115 @@ class AcademicManagementController extends Controller
 
         return redirect()->route('admin.academic.show_course', ['id' => $course->id])->with('success', 'Caché actualizado exitosamente.');
     }
+
+    public function enrollToSecondYear($year_id)
+    {
+        $apikey = Config::get('app.moodle_api_key_matricular');
+
+        // Obtener el año académico
+        $year = Year::findOrFail($year_id);
+        Log::info("Obteniendo el año académico con ID: {$year->id} - Nombre: {$year->nombre}");
+
+        // Verificar que es el Primer Año
+        if ($year->nombre !== 'Primer año') {
+            Log::warning("El año académico no es 'Primer año'. Año: {$year->nombre}");
+            return redirect()->back()->withErrors(['error' => 'Este año no es el Primer Año.']);
+        }
+
+        // Obtener todos los cursos del Primer Año
+        $courses = $year->courses;
+        Log::info("Número de cursos obtenidos para el Primer Año (ID: {$year->id}): " . count($courses));
+
+        if ($courses->isEmpty()) {
+            Log::warning("No hay cursos en el Primer Año (ID: {$year->id}).");
+            return redirect()->back()->withErrors(['error' => 'No hay cursos en este año académico.']);
+        }
+
+        // Obtener el Segundo Año de la misma carrera
+        $secondYear = Year::where('id_career', $year->id_career)
+                        ->where('nombre', 'Segundo año')
+                        ->first();
+
+        if (!$secondYear) {
+            Log::error("No se encontró el Segundo Año en la base de datos para la carrera (ID: {$year->id_career}).");
+            return redirect()->back()->withErrors(['error' => 'No se encontró el Segundo Año en la base de datos.']);
+        }
+
+        Log::info("Segundo Año encontrado: ID: {$secondYear->id}, Nombre: {$secondYear->nombre}, ID Moodle: {$secondYear->id_moodle}");
+
+        // Obtener los cursos del Segundo Año
+        $secondYearCourses = Course::where('id_year', $secondYear->id)->get();
+        Log::info("Número de cursos obtenidos para el Segundo Año (ID: {$secondYear->id}): " . count($secondYearCourses));
+
+        if ($secondYearCourses->isEmpty()) {
+            Log::warning("No hay cursos en el Segundo Año (ID: {$secondYear->id}).");
+            return redirect()->back()->withErrors(['error' => 'No hay cursos en el Segundo Año para matricular.']);
+        }
+
+        // Recorremos cada curso del Primer Año
+        foreach ($courses as $course) {
+            Log::info("Procesando curso del Primer Año: ID Moodle: {$course->id_moodle}, Nombre: {$course->nombre}");
+
+            // Obtener los estudiantes inscritos en el curso
+            $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_enrol_get_enrolled_users'
+                . '&wstoken=' . urldecode($apikey)
+                . '&courseid=' . $course->id_moodle
+            );
+
+            if ($response->failed()) {
+                Log::error("Error al obtener estudiantes del curso en Moodle (ID Moodle: {$course->id_moodle}): " . $response->body());
+                continue;
+            }
+
+            // Filtrar estudiantes (excluyendo docentes)
+            $students = collect($response->json())->reject(function ($student) {
+                return collect($student['roles'])->contains('roleid', 3); // Excluyendo docentes
+            });
+
+            Log::info("Número de estudiantes obtenidos para el curso (ID Moodle: {$course->id_moodle}): " . count($students));
+
+            // Matricular a cada estudiante en los cursos del Segundo Año y desmatricularlo del Primer Año
+            foreach ($students as $student) {
+                Log::info("Matriculando estudiante: ID Moodle: {$student['id']}, Nombre: {$student['fullname']}");
+
+                // Matricular al estudiante en los cursos del Segundo Año
+                foreach ($secondYearCourses as $secondYearCourse) {
+                    Log::info("Matriculando en curso del Segundo Año: ID Moodle: {$secondYearCourse->id_moodle}, Nombre: {$secondYearCourse->nombre}");
+
+                    $enrollmentResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=enrol_manual_enrol_users'
+                        . '&wstoken=' . urldecode($apikey)
+                        . '&enrolments[0][roleid]=5'  // roleid 5 para estudiante
+                        . '&enrolments[0][userid]=' . $student['id']
+                        . '&enrolments[0][courseid]=' . $secondYearCourse->id_moodle
+                    );
+
+                    if ($enrollmentResponse->failed()) {
+                        Log::error("Error al matricular estudiante (ID Moodle: {$student['id']}) en curso del Segundo Año (ID Moodle: {$secondYearCourse->id_moodle}): " . $enrollmentResponse->body());
+                    } else {
+                        Log::info("Estudiante (ID Moodle: {$student['id']}) matriculado correctamente en el curso (ID Moodle: {$secondYearCourse->id_moodle})");
+                    }
+                }
+
+                // Desmatricular al estudiante de los cursos del Primer Año
+                Log::info("Desmatriculando estudiante (ID Moodle: {$student['id']}) de los cursos del Primer Año");
+
+                $unenrollmentResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=enrol_manual_unenrol_users'
+                    . '&wstoken=' . urldecode($apikey)
+                    . '&enrolments[0][userid]=' . $student['id']
+                    . '&enrolments[0][courseid]=' . $course->id_moodle
+                );
+
+                if ($unenrollmentResponse->failed()) {
+                    Log::error("Error al desmatricular estudiante (ID Moodle: {$student['id']}) del curso (ID Moodle: {$course->id_moodle}): " . $unenrollmentResponse->body());
+                } else {
+                    Log::info("Estudiante (ID Moodle: {$student['id']}) desmatriculado correctamente del curso (ID Moodle: {$course->id_moodle})");
+                }
+            }
+        }
+
+        Log::info("Matriculación completa para todos los estudiantes del Primer Año (ID: {$year->id}) al Segundo Año (ID: {$secondYear->id}), y desmatriculados de los cursos del Primer Año.");
+
+        // Redirigir con el mensaje de éxito que activará el modal en la vista
+        return redirect()->back()->with('enroll_success', 'Todos los estudiantes han sido matriculados en el Segundo Año y desmatriculados de los cursos del Primer Año.');
+    }
 }
