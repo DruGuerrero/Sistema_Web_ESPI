@@ -31,24 +31,22 @@
         </div>
     </div>
 
-    <div class="flex flex-wrap justify-center items-center">
-        <div class="row">
+    <div class="flex justify-center">
+        <div class="grid gap-4 grid-cols-[repeat(auto-fit,minmax(300px,1fr))] sm:grid-cols-2 lg:grid-cols-3 w-full">
             @foreach($courses as $course)
-                <div class="col-md-4 mb-4">
-                    <x-advanced-card
-                        title="{{ $course['name'] }}"
-                        image="{{ $course['image'] }}"
-                        content="{{ $course['description'] }}"
-                        :contentBlocks="[['name' => 'Docente', 'professor' => $course['professor']]]"
-                        leftButtonLink="{{ $course['id'] }}"
-                        leftButtonText="Eliminar"
-                        rightButtonLink="{{ route('admin.academic.show_course', ['id' => $course['id']]) }}"
-                        rightButtonText="Ver"
-                    />
-                </div>
+                <x-advanced-card
+                    title="{{ $course['name'] }}"
+                    image="{{ $course['image'] }}"
+                    content="{{ $course['description'] }}"
+                    :contentBlocks="[['name' => 'Docente', 'professor' => $course['professor']]]"
+                    leftButtonLink="{{ $course['id'] }}"
+                    leftButtonText="Eliminar"
+                    rightButtonLink="{{ route('admin.academic.show_course', ['id' => $course['id']]) }}"
+                    rightButtonText="Ver"
+                />
             @endforeach
         </div>
-    </div>
+    </div>     
 
     <a href="{{ route('admin.academic.show', ['id' => $year->id_career]) }}" class="btn btn-primary">Volver</a>
 
