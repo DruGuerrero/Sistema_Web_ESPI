@@ -317,13 +317,6 @@ return [
             'url' => 'admin/blog',
             'can' => 'manage-blog',
         ],
-        // [
-        //     'text' => 'pages',
-        //     'url' => 'admin/pages',
-        //     'icon' => 'far fa-fw fa-file',
-        //     //'label' => 4,
-        //     'label_color' => 'success',
-        // ],
         [   'header' => 'GESTIÓN DE USUARIOS',
             'can' => 'manage-users',
             'classes' => 'text-bold',
@@ -347,9 +340,9 @@ return [
         ],
         [
             'text' => 'Gestión académica',
-            'url' => 'admin/academic',
+            'url' => 'admin/academic', // Siempre dirigimos a la ruta general aquí
             'icon' => 'fas fa-fw fa-university',
-            'can' => 'manage-academic', // Visible para Superusuario, Jefe de carrera y Docente
+            'can' => 'manage-academic',  // Esta directiva sigue siendo válida
         ],
         [   'header' => 'GESTIÓN DE PAGOS',
             'can' => 'manage-payments',
