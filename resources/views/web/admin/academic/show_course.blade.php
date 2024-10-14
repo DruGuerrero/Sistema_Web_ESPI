@@ -12,6 +12,15 @@
 @stop
 
 @section('content')
+    @if ($errors->any())
+        <div class="alert alert-danger mb-6">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
     <div class="d-flex justify-content-between px-2.5">
         <p>{{ $course->descripcion }}</p>       
         <form id="refreshCacheForm" action="{{ route('admin.academic.refresh_cache', ['id' => $course->id]) }}" method="POST" style="display: inline;">

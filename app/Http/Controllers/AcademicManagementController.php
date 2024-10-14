@@ -357,7 +357,7 @@ class AcademicManagementController extends Controller
         Log::info('Respuesta de creación de curso en Moodle:', $courseResponseBody);
 
         if (!isset($courseResponseBody[0])) {
-            return redirect()->back()->withErrors(['error' => 'Respuesta inesperada de Moodle al crear curso.']);
+            return redirect()->back()->withErrors(['error' => 'Error creando curso. Ya existe un curso con el nombre ingresado.']);
         }
 
         $course = $courseResponseBody[0];
@@ -612,6 +612,7 @@ class AcademicManagementController extends Controller
     {
         $apikey = Config::get('app.moodle_api_key_info_estudiantes');
 
+        // Validar los datos entrantes
         $request->validate([
             'name' => 'required|string|max:100',
             'description' => 'required|string',
@@ -619,33 +620,58 @@ class AcademicManagementController extends Controller
             'name.max' => 'El nombre no debe tener más de 100 caracteres.',
         ]);
 
+        // Obtener el curso de la base de datos
         $course = Course::findOrFail($id);
 
         $name = $request->input('name');
         $description = $request->input('description');
 
-        // Actualizar curso en Moodle
+        // Registrar intento de actualización del curso en Moodle
+        Log::info('Iniciando solicitud de actualización del curso en Moodle', ['moodle_course_id' => $course->id_moodle]);
+
+        // Enviar la solicitud de actualización a Moodle
         $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_update_courses'
             . '&wstoken=' . urldecode($apikey)
             . '&courses[0][id]=' . $course->id_moodle
             . '&courses[0][fullname]=' . urlencode($name)
-            . '&courses[0][shortname]=' . urlencode(substr($name, 0, 4) . $course->id_year)
+            . '&courses[0][shortname]=' . urlencode($name)
             . '&courses[0][summary]=' . urlencode($description)
             . '&courses[0][summaryformat]=2' // PLAIN
         );
 
+        // Verificar si la solicitud falló
         if ($response->failed()) {
-            Log::error('Error actualizando curso en Moodle: ' . $response->body());
+            Log::error('Error al actualizar el curso en Moodle', ['response' => $response->body()]);
             return redirect()->back()->withErrors(['error' => 'Error actualizando curso en Moodle']);
         }
 
-        // Actualizar el curso en la base de datos
+        $moodleResponse = $response->json();
+        Log::info('Respuesta completa de Moodle al intentar actualizar el curso:', $moodleResponse);
+
+        // Revisar si existe una advertencia de que el shortname ya está en uso
+        if (isset($moodleResponse['warnings']) && !empty($moodleResponse['warnings'])) {
+            foreach ($moodleResponse['warnings'] as $warning) {
+                if ($warning['warningcode'] === 'shortnametaken') {
+                    Log::error('El nombre corto ya está en uso', ['message' => $warning['message']]);
+                    return redirect()->back()->withErrors(['error' => 'Error actualizando curso. El nombre corto ya está en uso en otro curso.']);
+                }
+            }
+        }
+
+        // Si no hay advertencias y todo va bien, actualizar el curso en la base de datos
+        Log::info('Actualizando el curso en la base de datos', ['course_id' => $course->id]);
+
         $course->update([
             'nombre' => $name,
             'descripcion' => $description,
         ]);
 
+        // Limpiar la caché del curso
+        Log::info('Limpiando la caché del curso', ['cache_key' => 'course_' . $course->id . '_students']);
         Cache::forget('course_' . $course->id . '_students');
+
+        // Registrar éxito en la actualización
+        Log::info('Curso actualizado correctamente en el sistema', ['course_id' => $course->id]);
 
         return redirect()->route('admin.academic.show_course', ['id' => $course->id])->with('success', 'Curso actualizado exitosamente.');
     }
