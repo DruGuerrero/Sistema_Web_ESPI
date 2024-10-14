@@ -76,7 +76,7 @@
                         @csrf
                         <div class="form-group">
                             <label for="nombre">Nombre del servicio o bien académico</label>
-                            <input type="text" class="form-control" id="nombre" name="nombre" required>
+                            <input type="text" class="form-control" id="nombre" name="nombre" required maxlength="100">
                         </div>
                         <div class="form-group">
                             <label for="descripcion">Descripción</label>
@@ -119,7 +119,7 @@
                             @method('PUT')
                             <div class="form-group">
                                 <label for="nombre">Nombre del servicio o bien académico</label>
-                                <input type="text" class="form-control" id="nombre" name="nombre" value="{{ $product->nombre }}" required>
+                                <input type="text" class="form-control" id="nombre" name="nombre" value="{{ $product->nombre }}" required maxlength="100">
                             </div>
                             <div class="form-group">
                                 <label for="descripcion">Descripción</label>

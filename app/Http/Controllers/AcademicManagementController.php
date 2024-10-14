@@ -47,8 +47,10 @@ class AcademicManagementController extends Controller
         $apikey = Config::get('app.moodle_api_key_detalles_categorias');
 
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:50',
             'description' => 'required|string',
+        ], [
+            'name.max' => 'El nombre no debe tener más de 50 caracteres.'
         ]);
 
         $name = urlencode($request->input('name'));
@@ -149,9 +151,11 @@ class AcademicManagementController extends Controller
         $apikey = Config::get('app.moodle_api_key_detalles_categorias');
 
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:50',
             'description' => 'required|string',
             'career_id' => 'required|exists:careers,id',
+        ], [
+            'name.max' => 'El nombre no debe tener más de 50 caracteres.',
         ]);
 
         $name = urlencode($request->input('name'));
@@ -297,10 +301,12 @@ class AcademicManagementController extends Controller
         $apikey = Config::get('app.moodle_api_key_crear_cursos');
 
         $request->validate([
-            'fullname' => 'required|string|max:255',
+            'fullname' => 'required|string|max:100',
             'description' => 'required|string',
             'image' => 'required|file|mimes:jpg,jpeg,png|max:2048',
             'teacher' => 'required|integer',
+        ], [
+            'fullname.max' => 'El nombre no debe tener más de 100 caracteres.',
         ]);
 
         $yearId = $request->input('subcategory_id');
@@ -467,8 +473,10 @@ class AcademicManagementController extends Controller
         $apikey = Config::get('app.moodle_api_key_crear_cursos');
 
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:50',
             'description' => 'required|string',
+        ], [
+            'name.max' => 'El nombre no debe tener más de 50 caracteres.',
         ]);
 
         $year = Year::findOrFail($id);
@@ -504,8 +512,10 @@ class AcademicManagementController extends Controller
         $apikey = Config::get('app.moodle_api_key_crear_cursos');
 
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:50',
             'description' => 'required|string',
+        ], [
+            'name.max' => 'El nombre no debe tener más de 50 caracteres.',
         ]);
 
         $career = Career::findOrFail($id);
@@ -603,8 +613,10 @@ class AcademicManagementController extends Controller
         $apikey = Config::get('app.moodle_api_key_info_estudiantes');
 
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:100',
             'description' => 'required|string',
+        ], [
+            'name.max' => 'El nombre no debe tener más de 100 caracteres.',
         ]);
 
         $course = Course::findOrFail($id);
