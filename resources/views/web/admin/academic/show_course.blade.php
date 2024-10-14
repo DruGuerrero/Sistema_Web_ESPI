@@ -39,7 +39,7 @@
     @endphp
 
     <x-table :headers="$headers" :rows="$rows" />
-    <a href="{{ route('admin.academic.show_subcategory', ['id' => $course->id_year]) }}" class="btn btn-primary">Volver</a>
+    <a href="javascript:history.back()" class="btn btn-primary">Volver</a>
 
     <!-- Modal -->
     <div class="modal fade" id="editCourseModal" tabindex="-1" role="dialog" aria-labelledby="editCourseModalLabel" aria-hidden="true">

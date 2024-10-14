@@ -20,7 +20,14 @@ class AcademicManagementController extends Controller
 {
     public function index()
     {
-        // Obtener las carreras desde la base de datos
+        $user = auth()->user();
+
+        // Si es docente, redirigir a la vista de sus cursos
+        if ($user->role === 'Docente') {
+            return redirect()->route('admin.academic.my_courses');
+        }
+
+        // Lógica original para otros roles
         $careers = Career::all();
 
         foreach ($careers as $career) {
@@ -30,7 +37,6 @@ class AcademicManagementController extends Controller
 
         return view('web.admin.academic.index', compact('careers'));
     }
-    
     public function create()
     {
         return view('web.admin.academic.create');
@@ -788,5 +794,20 @@ class AcademicManagementController extends Controller
 
         // Redirigir con el mensaje de éxito que activará el modal en la vista
         return redirect()->back()->with('enroll_success', 'Todos los estudiantes han sido matriculados en el Segundo Año y desmatriculados de los cursos del Primer Año.');
+    }
+    public function myCourses()
+    {
+        $user = auth()->user();
+
+        // Verificar que el usuario es un docente
+        if ($user->role !== 'Docente') {
+            abort(403, 'No tienes permiso para acceder a esta sección.');
+        }
+
+        // Obtener los cursos asignados al docente
+        $courses = $user->courses()->with('year')->get();
+
+        // Redirigir a la vista personalizada para el docente
+        return view('web.admin.academic.my_courses', compact('courses'));
     }
 }
