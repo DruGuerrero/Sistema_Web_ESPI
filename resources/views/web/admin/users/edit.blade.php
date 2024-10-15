@@ -57,8 +57,8 @@
                     <x-checkbox name="disabled" :checked="!$user->disabled"></x-checkbox>
                 </div>
                 <div class="flex justify-between mt-6">
-                    <button type="submit" class="btn btn-success">Actualizar</button>
                     <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-success">Actualizar</button>
                 </div>
             </form>
         </div>

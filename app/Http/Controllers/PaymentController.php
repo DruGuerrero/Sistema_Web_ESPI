@@ -107,9 +107,11 @@ class PaymentController extends Controller
     public function storeProduct(Request $request)
     {
         $request->validate([
-            'nombre' => 'required|string|max:255',
+            'nombre' => 'required|string|max:100',
             'descripcion' => 'required|string',
             'precio' => 'required|numeric|between:0,999999.99',
+        ], [
+            'nombre.max' => 'El nombre no debe tener más de 100 caracteres.',
         ]);
 
         Product::create($request->all());
@@ -122,6 +124,8 @@ class PaymentController extends Controller
             'nombre' => 'required|string|max:255',
             'descripcion' => 'required|string',
             'precio' => 'required|numeric|between:0,999999.99',
+        ], [
+            'nombre.max' => 'El nombre no debe tener más de 100 caracteres.',
         ]);
 
         $product->update($request->all());

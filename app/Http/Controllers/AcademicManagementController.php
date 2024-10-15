@@ -20,7 +20,14 @@ class AcademicManagementController extends Controller
 {
     public function index()
     {
-        // Obtener las carreras desde la base de datos
+        $user = auth()->user();
+
+        // Si es docente, redirigir a la vista de sus cursos
+        if ($user->role === 'Docente') {
+            return redirect()->route('admin.academic.my_courses');
+        }
+
+        // Lógica original para otros roles
         $careers = Career::all();
 
         foreach ($careers as $career) {
@@ -30,7 +37,6 @@ class AcademicManagementController extends Controller
 
         return view('web.admin.academic.index', compact('careers'));
     }
-    
     public function create()
     {
         return view('web.admin.academic.create');
@@ -41,8 +47,10 @@ class AcademicManagementController extends Controller
         $apikey = Config::get('app.moodle_api_key_detalles_categorias');
 
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:50',
             'description' => 'required|string',
+        ], [
+            'name.max' => 'El nombre no debe tener más de 50 caracteres.'
         ]);
 
         $name = urlencode($request->input('name'));
@@ -143,9 +151,11 @@ class AcademicManagementController extends Controller
         $apikey = Config::get('app.moodle_api_key_detalles_categorias');
 
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:50',
             'description' => 'required|string',
             'career_id' => 'required|exists:careers,id',
+        ], [
+            'name.max' => 'El nombre no debe tener más de 50 caracteres.',
         ]);
 
         $name = urlencode($request->input('name'));
@@ -291,10 +301,12 @@ class AcademicManagementController extends Controller
         $apikey = Config::get('app.moodle_api_key_crear_cursos');
 
         $request->validate([
-            'fullname' => 'required|string|max:255',
+            'fullname' => 'required|string|max:100',
             'description' => 'required|string',
             'image' => 'required|file|mimes:jpg,jpeg,png|max:2048',
             'teacher' => 'required|integer',
+        ], [
+            'fullname.max' => 'El nombre no debe tener más de 100 caracteres.',
         ]);
 
         $yearId = $request->input('subcategory_id');
@@ -345,7 +357,7 @@ class AcademicManagementController extends Controller
         Log::info('Respuesta de creación de curso en Moodle:', $courseResponseBody);
 
         if (!isset($courseResponseBody[0])) {
-            return redirect()->back()->withErrors(['error' => 'Respuesta inesperada de Moodle al crear curso.']);
+            return redirect()->back()->withErrors(['error' => 'Error creando curso. Ya existe un curso con el nombre ingresado.']);
         }
 
         $course = $courseResponseBody[0];
@@ -461,8 +473,10 @@ class AcademicManagementController extends Controller
         $apikey = Config::get('app.moodle_api_key_crear_cursos');
 
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:50',
             'description' => 'required|string',
+        ], [
+            'name.max' => 'El nombre no debe tener más de 50 caracteres.',
         ]);
 
         $year = Year::findOrFail($id);
@@ -498,8 +512,10 @@ class AcademicManagementController extends Controller
         $apikey = Config::get('app.moodle_api_key_crear_cursos');
 
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:50',
             'description' => 'required|string',
+        ], [
+            'name.max' => 'El nombre no debe tener más de 50 caracteres.',
         ]);
 
         $career = Career::findOrFail($id);
@@ -596,38 +612,66 @@ class AcademicManagementController extends Controller
     {
         $apikey = Config::get('app.moodle_api_key_info_estudiantes');
 
+        // Validar los datos entrantes
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:100',
             'description' => 'required|string',
+        ], [
+            'name.max' => 'El nombre no debe tener más de 100 caracteres.',
         ]);
 
+        // Obtener el curso de la base de datos
         $course = Course::findOrFail($id);
 
         $name = $request->input('name');
         $description = $request->input('description');
 
-        // Actualizar curso en Moodle
+        // Registrar intento de actualización del curso en Moodle
+        Log::info('Iniciando solicitud de actualización del curso en Moodle', ['moodle_course_id' => $course->id_moodle]);
+
+        // Enviar la solicitud de actualización a Moodle
         $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_course_update_courses'
             . '&wstoken=' . urldecode($apikey)
             . '&courses[0][id]=' . $course->id_moodle
             . '&courses[0][fullname]=' . urlencode($name)
-            . '&courses[0][shortname]=' . urlencode(substr($name, 0, 4) . $course->id_year)
+            . '&courses[0][shortname]=' . urlencode($name)
             . '&courses[0][summary]=' . urlencode($description)
             . '&courses[0][summaryformat]=2' // PLAIN
         );
 
+        // Verificar si la solicitud falló
         if ($response->failed()) {
-            Log::error('Error actualizando curso en Moodle: ' . $response->body());
+            Log::error('Error al actualizar el curso en Moodle', ['response' => $response->body()]);
             return redirect()->back()->withErrors(['error' => 'Error actualizando curso en Moodle']);
         }
 
-        // Actualizar el curso en la base de datos
+        $moodleResponse = $response->json();
+        Log::info('Respuesta completa de Moodle al intentar actualizar el curso:', $moodleResponse);
+
+        // Revisar si existe una advertencia de que el shortname ya está en uso
+        if (isset($moodleResponse['warnings']) && !empty($moodleResponse['warnings'])) {
+            foreach ($moodleResponse['warnings'] as $warning) {
+                if ($warning['warningcode'] === 'shortnametaken') {
+                    Log::error('El nombre corto ya está en uso', ['message' => $warning['message']]);
+                    return redirect()->back()->withErrors(['error' => 'Error actualizando curso. El nombre corto ya está en uso en otro curso.']);
+                }
+            }
+        }
+
+        // Si no hay advertencias y todo va bien, actualizar el curso en la base de datos
+        Log::info('Actualizando el curso en la base de datos', ['course_id' => $course->id]);
+
         $course->update([
             'nombre' => $name,
             'descripcion' => $description,
         ]);
 
+        // Limpiar la caché del curso
+        Log::info('Limpiando la caché del curso', ['cache_key' => 'course_' . $course->id . '_students']);
         Cache::forget('course_' . $course->id . '_students');
+
+        // Registrar éxito en la actualización
+        Log::info('Curso actualizado correctamente en el sistema', ['course_id' => $course->id]);
 
         return redirect()->route('admin.academic.show_course', ['id' => $course->id])->with('success', 'Curso actualizado exitosamente.');
     }
@@ -677,5 +721,131 @@ class AcademicManagementController extends Controller
         Cache::forget('course_' . $course->id . '_students');
 
         return redirect()->route('admin.academic.show_course', ['id' => $course->id])->with('success', 'Caché actualizado exitosamente.');
+    }
+
+    public function enrollToSecondYear($year_id)
+    {
+        $apikey = Config::get('app.moodle_api_key_matricular');
+
+        // Obtener el año académico
+        $year = Year::findOrFail($year_id);
+        Log::info("Obteniendo el año académico con ID: {$year->id} - Nombre: {$year->nombre}");
+
+        // Verificar que es el Primer Año
+        if ($year->nombre !== 'Primer año') {
+            Log::warning("El año académico no es 'Primer año'. Año: {$year->nombre}");
+            return redirect()->back()->withErrors(['error' => 'Este año no es el Primer Año.']);
+        }
+
+        // Obtener todos los cursos del Primer Año
+        $courses = $year->courses;
+        Log::info("Número de cursos obtenidos para el Primer Año (ID: {$year->id}): " . count($courses));
+
+        if ($courses->isEmpty()) {
+            Log::warning("No hay cursos en el Primer Año (ID: {$year->id}).");
+            return redirect()->back()->withErrors(['error' => 'No hay cursos en este año académico.']);
+        }
+
+        // Obtener el Segundo Año de la misma carrera
+        $secondYear = Year::where('id_career', $year->id_career)
+                        ->where('nombre', 'Segundo año')
+                        ->first();
+
+        if (!$secondYear) {
+            Log::error("No se encontró el Segundo Año en la base de datos para la carrera (ID: {$year->id_career}).");
+            return redirect()->back()->withErrors(['error' => 'No se encontró el Segundo Año en la base de datos.']);
+        }
+
+        Log::info("Segundo Año encontrado: ID: {$secondYear->id}, Nombre: {$secondYear->nombre}, ID Moodle: {$secondYear->id_moodle}");
+
+        // Obtener los cursos del Segundo Año
+        $secondYearCourses = Course::where('id_year', $secondYear->id)->get();
+        Log::info("Número de cursos obtenidos para el Segundo Año (ID: {$secondYear->id}): " . count($secondYearCourses));
+
+        if ($secondYearCourses->isEmpty()) {
+            Log::warning("No hay cursos en el Segundo Año (ID: {$secondYear->id}).");
+            return redirect()->back()->withErrors(['error' => 'No hay cursos en el Segundo Año para matricular.']);
+        }
+
+        // Recorremos cada curso del Primer Año
+        foreach ($courses as $course) {
+            Log::info("Procesando curso del Primer Año: ID Moodle: {$course->id_moodle}, Nombre: {$course->nombre}");
+
+            // Obtener los estudiantes inscritos en el curso
+            $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_enrol_get_enrolled_users'
+                . '&wstoken=' . urldecode($apikey)
+                . '&courseid=' . $course->id_moodle
+            );
+
+            if ($response->failed()) {
+                Log::error("Error al obtener estudiantes del curso en Moodle (ID Moodle: {$course->id_moodle}): " . $response->body());
+                continue;
+            }
+
+            // Filtrar estudiantes (excluyendo docentes)
+            $students = collect($response->json())->reject(function ($student) {
+                return collect($student['roles'])->contains('roleid', 3); // Excluyendo docentes
+            });
+
+            Log::info("Número de estudiantes obtenidos para el curso (ID Moodle: {$course->id_moodle}): " . count($students));
+
+            // Matricular a cada estudiante en los cursos del Segundo Año y desmatricularlo del Primer Año
+            foreach ($students as $student) {
+                Log::info("Matriculando estudiante: ID Moodle: {$student['id']}, Nombre: {$student['fullname']}");
+
+                // Matricular al estudiante en los cursos del Segundo Año
+                foreach ($secondYearCourses as $secondYearCourse) {
+                    Log::info("Matriculando en curso del Segundo Año: ID Moodle: {$secondYearCourse->id_moodle}, Nombre: {$secondYearCourse->nombre}");
+
+                    $enrollmentResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=enrol_manual_enrol_users'
+                        . '&wstoken=' . urldecode($apikey)
+                        . '&enrolments[0][roleid]=5'  // roleid 5 para estudiante
+                        . '&enrolments[0][userid]=' . $student['id']
+                        . '&enrolments[0][courseid]=' . $secondYearCourse->id_moodle
+                    );
+
+                    if ($enrollmentResponse->failed()) {
+                        Log::error("Error al matricular estudiante (ID Moodle: {$student['id']}) en curso del Segundo Año (ID Moodle: {$secondYearCourse->id_moodle}): " . $enrollmentResponse->body());
+                    } else {
+                        Log::info("Estudiante (ID Moodle: {$student['id']}) matriculado correctamente en el curso (ID Moodle: {$secondYearCourse->id_moodle})");
+                    }
+                }
+
+                // Desmatricular al estudiante de los cursos del Primer Año
+                Log::info("Desmatriculando estudiante (ID Moodle: {$student['id']}) de los cursos del Primer Año");
+
+                $unenrollmentResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=enrol_manual_unenrol_users'
+                    . '&wstoken=' . urldecode($apikey)
+                    . '&enrolments[0][userid]=' . $student['id']
+                    . '&enrolments[0][courseid]=' . $course->id_moodle
+                );
+
+                if ($unenrollmentResponse->failed()) {
+                    Log::error("Error al desmatricular estudiante (ID Moodle: {$student['id']}) del curso (ID Moodle: {$course->id_moodle}): " . $unenrollmentResponse->body());
+                } else {
+                    Log::info("Estudiante (ID Moodle: {$student['id']}) desmatriculado correctamente del curso (ID Moodle: {$course->id_moodle})");
+                }
+            }
+        }
+
+        Log::info("Matriculación completa para todos los estudiantes del Primer Año (ID: {$year->id}) al Segundo Año (ID: {$secondYear->id}), y desmatriculados de los cursos del Primer Año.");
+
+        // Redirigir con el mensaje de éxito que activará el modal en la vista
+        return redirect()->back()->with('enroll_success', 'Todos los estudiantes han sido matriculados en el Segundo Año y desmatriculados de los cursos del Primer Año.');
+    }
+    public function myCourses()
+    {
+        $user = auth()->user();
+
+        // Verificar que el usuario es un docente
+        if ($user->role !== 'Docente') {
+            abort(403, 'No tienes permiso para acceder a esta sección.');
+        }
+
+        // Obtener los cursos asignados al docente
+        $courses = $user->courses()->with('year')->get();
+
+        // Redirigir a la vista personalizada para el docente
+        return view('web.admin.academic.my_courses', compact('courses'));
     }
 }

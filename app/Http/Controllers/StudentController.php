@@ -57,18 +57,29 @@ class StudentController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nombre' => 'required|string|max:255',
-            'apellido_paterno' => 'required|string|max:255',
-            'apellido_materno' => 'required|string|max:255',
-            'num_carnet' => 'required|string|max:255',
+            'nombre' => 'required|string|max:50',
+            'apellido_paterno' => 'required|string|max:50',
+            'apellido_materno' => 'required|string|max:50',
+            'num_carnet' => 'required|string|max:10',
             'email' => 'required|string|email|max:255|unique:students',
             'ciudad_domicilio' => 'required|string|max:255',
-            'num_celular' => 'required|string|max:255',
-            'nombre_tutor' => 'nullable|string|max:255',
-            'celular_tutor' => 'nullable|string|max:255',
+            'num_celular' => 'required|string|max:10',
+            'nombre_tutor' => 'nullable|string|max:50',
+            'celular_tutor' => 'nullable|string|max:10',
             'ciudad_tutor' => 'nullable|string|max:255',
-            'parentesco' => 'nullable|string|max:255',
+            'parentesco' => 'nullable|string|max:20',
             'career_id' => 'required|exists:careers,id', // Validación para carrera
+        ], [
+            'nombre.max' => 'El nombre no debe tener más de 50 caracteres.',
+            'apellido_paterno.max' => 'El apellido paterno no debe tener más de 50 caracteres.',
+            'apellido_materno.max' => 'El apellido materno no debe tener más de 50 caracteres.',
+            'num_carnet.max' => 'El número de carnet no debe tener más de 10 caracteres.',
+            'ciudad_domicilio.max' => 'La ciudad de domicilio no debe tener más de 255 caracteres.',
+            'num_celular.max' => 'El número de celular no debe tener más de 10 caracteres.',
+            'nombre_tutor.max' => 'El nombre del tutor no debe tener más de 50 caracteres.',
+            'celular_tutor.max' => 'El número de celular del tutor no debe tener más de 10 caracteres.',
+            'ciudad_tutor.max' => 'La ciudad del tutor no debe tener más de 255 caracteres.',
+            'parentesco.max' => 'La parentesco no debe tener más de 20 caracteres.',
         ]);
 
         $data = $request->all();
@@ -103,27 +114,146 @@ class StudentController extends Controller
     public function update(Request $request, Student $student)
     {
         $request->validate([
-            'nombre' => 'required|string|max:255',
-            'apellido_paterno' => 'required|string|max:255',
-            'apellido_materno' => 'required|string|max:255',
-            'num_carnet' => 'required|string|max:255',
+            'nombre' => 'required|string|max:50',
+            'apellido_paterno' => 'required|string|max:50',
+            'apellido_materno' => 'required|string|max:50',
+            'num_carnet' => 'required|string|max:10',
             'email' => 'required|string|email|max:255|unique:students,email,' . $student->id,
             'ciudad_domicilio' => 'required|string|max:255',
-            'num_celular' => 'required|string|max:255',
-            'nombre_tutor' => 'nullable|string|max:255',
-            'celular_tutor' => 'nullable|string|max:255',
+            'num_celular' => 'required|string|max:10',
+            'nombre_tutor' => 'nullable|string|max:50',
+            'celular_tutor' => 'nullable|string|max:10',
             'ciudad_tutor' => 'nullable|string|max:255',
-            'parentesco' => 'nullable|string|max:255',
+            'parentesco' => 'nullable|string|max:20',
             'documentos_estudiante' => 'nullable|file|mimes:pdf,jpg,jpeg,png',
             'foto_tipo_carnet' => 'nullable|file|mimes:jpg,jpeg,png',
+        ], [
+            'nombre.max' => 'El nombre no debe tener más de 50 caracteres.',
+            'apellido_paterno.max' => 'El apellido paterno no debe tener más de 50 caracteres.',
+            'apellido_materno.max' => 'El apellido materno no debe tener más de 50 caracteres.',
+            'num_carnet.max' => 'El número de carnet no debe tener más de 10 caracteres.',
+            'ciudad_domicilio.max' => 'La ciudad de domicilio no debe tener más de 255 caracteres.',
+            'num_celular.max' => 'El número de celular no debe tener más de 10 caracteres.',
+            'nombre_tutor.max' => 'El nombre del tutor no debe tener más de 50 caracteres.',
+            'celular_tutor.max' => 'El número de celular del tutor no debe tener más de 10 caracteres.',
+            'ciudad_tutor.max' => 'La ciudad del tutor no debe tener más de 255 caracteres.',
+            'parentesco.max' => 'La parentesco no debe tener más de 20 caracteres.',
         ]);
 
         $data = $request->all();
         $data['matricula'] = $student->matricula;
         $data['disabled'] = $request->has('disabled') ? 0 : 1;
 
+        // Actualizar datos del estudiante en la base de datos local
         $student->update($data);
 
+        // --- Iniciar proceso de actualización en Moodle ---
+        try {
+            // Obtener la API key y el moodle_user del estudiante
+            $apikey = Config::get('app.moodle_api_key_matricular');
+            $moodleUser = $student->moodle_user;
+
+            // 1. Buscar al estudiante en Moodle por username
+            $response = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_get_users'
+                . '&wstoken=' . urldecode($apikey)
+                . '&criteria[0][key]=username'
+                . '&criteria[0][value]=' . urlencode($moodleUser)
+            );
+
+            // Verificar si la solicitud falló o si no encontramos al usuario
+            if ($response->failed() || empty($response->json()['users'])) {
+                Log::error('Error al buscar estudiante en Moodle: ' . $response->body());
+                return redirect()->route('admin.students.index')->with('error', 'Estudiante no encontrado en Moodle.');
+            }
+
+            // Obtener el ID del estudiante en Moodle
+            $moodleUserId = $response->json()['users'][0]['id'];
+
+            // 2. Preparar datos para la actualización en Moodle
+            $firstname = $request->nombre;
+            $lastname = $request->apellido_paterno . ' ' . $request->apellido_materno;
+            $email = $request->email;
+
+            // 3. Construir la URL para actualizar el estudiante en Moodle
+            $updateResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_update_users'
+                . '&wstoken=' . urldecode($apikey)
+                . '&users[0][id]=' . urlencode($moodleUserId)
+                . '&users[0][username]=' . urlencode($moodleUser)
+                . '&users[0][firstname]=' . urlencode($firstname)
+                . '&users[0][lastname]=' . urlencode($lastname)
+                . '&users[0][email]=' . urlencode($email)
+                . '&users[0][auth]=manual'
+                . '&users[0][lang]=es'
+            );
+
+            // Verificar si la solicitud de actualización falló
+            if ($updateResponse->failed()) {
+                Log::error('Error actualizando estudiante en Moodle: ' . $updateResponse->body());
+                return redirect()->route('admin.students.index')->with('error', 'Error actualizando estudiante en Moodle.');
+            }
+
+            // Registrar éxito en los logs
+            Log::info('Estudiante actualizado en Moodle: ' . $moodleUser);
+
+        } catch (\Exception $e) {
+            Log::error('Error procesando actualización de estudiante en Moodle: ' . $e->getMessage());
+            return redirect()->route('admin.students.index')->with('error', 'Error actualizando estudiante en Moodle.');
+        }
+
+        // --- Si el estudiante ha sido deshabilitado (disabled == 1), eliminarlo en Moodle ---
+        if ($student->disabled == 1) {
+            try {
+                // Verificar si el usuario existe en Moodle
+                $response = Http::retry(3, 1000)->get(
+                    'https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_get_users'
+                    . '&wstoken=' . urldecode($apikey)
+                    . '&criteria[0][key]=username'
+                    . '&criteria[0][value]=' . urlencode($moodleUser)
+                );
+
+                if ($response->failed()) {
+                    Log::error('Error al verificar la existencia del usuario en Moodle: ' . $response->body());
+                    throw new \Exception('Error verificando existencia del usuario en Moodle');
+                }
+
+                $moodleData = $response->json();
+
+                // Verificar si el usuario existe en Moodle
+                if (isset($moodleData['users'][0]['id'])) {
+                    $moodleUserId = $moodleData['users'][0]['id']; // Guardar el ID del usuario en Moodle
+
+                    // Eliminar el usuario en Moodle
+                    $deleteResponse = Http::retry(3, 1000)->post(
+                        'https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_delete_users'
+                        . '&wstoken=' . urldecode($apikey)
+                        . '&userids[0]=' . urlencode($moodleUserId)
+                    );
+
+                    if ($deleteResponse->failed()) {
+                        Log::error('Error al eliminar el usuario en Moodle: ' . $deleteResponse->body());
+                        throw new \Exception('Error eliminando usuario en Moodle');
+                    }
+
+                    Log::info('Usuario eliminado correctamente de Moodle', ['moodle_user' => $moodleUser]);
+
+                    // Actualizar los campos moodle_user, moodle_pass y matricula
+                    $student->update([
+                        'moodle_user' => null,
+                        'moodle_pass' => null,
+                        'matricula' => 'NO',
+                    ]);
+
+                    Log::info('Estado del estudiante actualizado: moodle_user, moodle_pass a null, matricula a NO', ['student_id' => $student->id]);
+                } else {
+                    Log::warning('Usuario no encontrado en Moodle: ' . $moodleUser);
+                }
+            } catch (\Exception $e) {
+                Log::error('Error procesando eliminación de estudiante en Moodle: ' . $e->getMessage());
+                return redirect()->route('admin.students.index')->with('error', 'Error al eliminar estudiante en Moodle.');
+            }
+        }
+
+        // --- Manejo de archivos de documentos del estudiante y foto tipo carnet ---
         if ($request->hasFile('documentos_estudiante')) {
             $path = $request->file('documentos_estudiante')->store('media_files', 'public');
             MediaFile::create([
@@ -132,6 +262,7 @@ class StudentController extends Controller
                 'file' => $path,
             ]);
         }
+
         if ($request->hasFile('foto_tipo_carnet')) {
             // Verificar si ya hay una foto tipo carnet existente
             $existingPhoto = $student->mediaFiles()->where('type', 'foto_tipo_carnet')->first();
@@ -155,7 +286,6 @@ class StudentController extends Controller
 
         return redirect()->route('admin.students.index')->with('success', 'Estudiante actualizado exitosamente.');
     }
-
     public function download(MediaFile $mediaFile)
     {
         $pathToFile = storage_path('app/public/' . $mediaFile->file);
@@ -342,7 +472,7 @@ class StudentController extends Controller
     
             if ($coursesResponse->failed()) {
                 Log::error('Error obteniendo cursos de Moodle: ' . $coursesResponse->body());
-                throw new \Exception('Error fetching courses from Moodle');
+                throw new \Exception('Error obteniendo cursos de Moodle');
             }
     
             $courses = $coursesResponse->json()['courses'];

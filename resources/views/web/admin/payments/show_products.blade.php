@@ -76,7 +76,7 @@
                         @csrf
                         <div class="form-group">
                             <label for="nombre">Nombre del servicio o bien académico</label>
-                            <input type="text" class="form-control" id="nombre" name="nombre" required>
+                            <input type="text" class="form-control" id="nombre" name="nombre" required maxlength="100">
                         </div>
                         <div class="form-group">
                             <label for="descripcion">Descripción</label>
@@ -92,9 +92,9 @@
                                 currency="BOB"
                             />
                         </div>
-                        <div class="modal-footer">
+                        <div class="modal-footer flex justify-between mt-6">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                            <button type="submit" class="btn btn-primary">Agregar</button>
+                            <button type="submit" class="btn btn-success">Agregar</button>
                         </div>
                     </form>
                 </div>
@@ -119,7 +119,7 @@
                             @method('PUT')
                             <div class="form-group">
                                 <label for="nombre">Nombre del servicio o bien académico</label>
-                                <input type="text" class="form-control" id="nombre" name="nombre" value="{{ $product->nombre }}" required>
+                                <input type="text" class="form-control" id="nombre" name="nombre" value="{{ $product->nombre }}" required maxlength="100">
                             </div>
                             <div class="form-group">
                                 <label for="descripcion">Descripción</label>
@@ -136,9 +136,9 @@
                                     value="{{ $product->precio }}"
                                 />
                             </div>
-                            <div class="modal-footer">
+                            <div class="modal-footer flex justify-between mt-6">
                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                                <button type="submit" class="btn btn-primary">Guardar cambios</button>
+                                <button type="submit" class="btn btn-success">Guardar cambios</button>
                             </div>
                         </form>
                     </div>

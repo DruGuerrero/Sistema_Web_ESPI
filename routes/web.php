@@ -60,6 +60,10 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth:sanctum', 'verified']]
         Route::get('academic/{career}/generate_report', [AcademicManagementController::class, 'generateCareerReport'])->name('admin.academic.generate_report');
         Route::get('academic/generate_course_report/{id}', [AcademicManagementController::class, 'generateCourseReport'])->name('admin.academic.generate_course_report');
         Route::get('admin/academic/course/{id}/teacher_report', [AcademicManagementController::class, 'generateTeacherReportByCourse'])->name('admin.academic.generate_teacher_report_by_course');
+        Route::post('academic/enroll_second_year/{id}', [AcademicManagementController::class, 'enrollToSecondYear'])->name('admin.academic.enroll_second_year');
+        Route::get('admin/academic/my-courses', [AcademicManagementController::class, 'myCourses'])
+            ->name('admin.academic.my_courses')
+            ->middleware(['auth', 'can:manage-academic']); // Aseguramos que solo docentes o roles superiores puedan acceder
     });
 
     // Rutas accesibles por Superusuario y Administrativo (Gestión de Estudiantes y Pagos)

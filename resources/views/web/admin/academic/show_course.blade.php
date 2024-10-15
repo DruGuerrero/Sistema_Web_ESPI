@@ -12,6 +12,15 @@
 @stop
 
 @section('content')
+    @if ($errors->any())
+        <div class="alert alert-danger mb-6">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
     <div class="d-flex justify-content-between px-2.5">
         <p>{{ $course->descripcion }}</p>       
         <form id="refreshCacheForm" action="{{ route('admin.academic.refresh_cache', ['id' => $course->id]) }}" method="POST" style="display: inline;">
@@ -39,7 +48,7 @@
     @endphp
 
     <x-table :headers="$headers" :rows="$rows" />
-    <a href="{{ route('admin.academic.show_subcategory', ['id' => $course->id_year]) }}" class="btn btn-primary">Volver</a>
+    <a href="javascript:history.back()" class="btn btn-primary">Volver</a>
 
     <!-- Modal -->
     <div class="modal fade" id="editCourseModal" tabindex="-1" role="dialog" aria-labelledby="editCourseModalLabel" aria-hidden="true">
@@ -65,9 +74,9 @@
                         </div>
                     </form>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer flex justify-between mt-6">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" id="saveCourseChanges">Actualizar</button>
+                    <button type="button" class="btn btn-success" id="saveCourseChanges">Actualizar</button>
                 </div>
             </div>
         </div>
