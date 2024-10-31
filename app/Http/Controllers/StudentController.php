@@ -147,6 +147,44 @@ class StudentController extends Controller
         // Actualizar datos del estudiante en la base de datos local
         $student->update($data);
 
+        // --- Manejo de archivos de documentos del estudiante y foto tipo carnet ---
+        if ($request->hasFile('documentos_estudiante')) {
+            // Usar el nombre original del archivo
+            $documentosEstudiante = $request->file('documentos_estudiante');
+            $fileName = $documentosEstudiante->getClientOriginalName();
+            $path = $documentosEstudiante->storeAs('media_files', $fileName, 'public');
+            
+            MediaFile::create([
+                'student_id' => $student->id,
+                'type' => 'documentos_estudiante',
+                'file' => $path,
+            ]);
+        }
+
+        if ($request->hasFile('foto_tipo_carnet')) {
+            // Verificar si ya hay una foto tipo carnet existente
+            $existingPhoto = $student->mediaFiles()->where('type', 'foto_tipo_carnet')->first();
+            if ($existingPhoto) {
+                // Eliminar el archivo existente del sistema de archivos
+                $existingFilePath = storage_path('app/public/' . $existingPhoto->file);
+                if (file_exists($existingFilePath)) {
+                    unlink($existingFilePath);
+                }
+                $existingPhoto->delete();
+            }
+
+            // Usar el nombre original del archivo
+            $fotoTipoCarnet = $request->file('foto_tipo_carnet');
+            $fileName = $fotoTipoCarnet->getClientOriginalName();
+            $path = $fotoTipoCarnet->storeAs('media_files', $fileName, 'public');
+            
+            MediaFile::create([
+                'student_id' => $student->id,
+                'type' => 'foto_tipo_carnet',
+                'file' => $path,
+            ]);
+        }
+
         // --- Iniciar proceso de actualización en Moodle ---
         try {
             // Obtener la API key y el moodle_user del estudiante
@@ -253,39 +291,9 @@ class StudentController extends Controller
             }
         }
 
-        // --- Manejo de archivos de documentos del estudiante y foto tipo carnet ---
-        if ($request->hasFile('documentos_estudiante')) {
-            $path = $request->file('documentos_estudiante')->store('media_files', 'public');
-            MediaFile::create([
-                'student_id' => $student->id,
-                'type' => 'documentos_estudiante',
-                'file' => $path,
-            ]);
-        }
-
-        if ($request->hasFile('foto_tipo_carnet')) {
-            // Verificar si ya hay una foto tipo carnet existente
-            $existingPhoto = $student->mediaFiles()->where('type', 'foto_tipo_carnet')->first();
-            if ($existingPhoto) {
-                // Eliminar el archivo existente del sistema de archivos
-                $existingFilePath = storage_path('app/public/' . $existingPhoto->file);
-                if (file_exists($existingFilePath)) {
-                    unlink($existingFilePath);
-                }
-                $existingPhoto->delete();
-            }
-
-            // Guardar la nueva foto tipo carnet
-            $path = $request->file('foto_tipo_carnet')->store('media_files', 'public');
-            MediaFile::create([
-                'student_id' => $student->id,
-                'type' => 'foto_tipo_carnet',
-                'file' => $path,
-            ]);
-        }
-
         return redirect()->route('admin.students.index')->with('success', 'Estudiante actualizado exitosamente.');
     }
+
     public function download(MediaFile $mediaFile)
     {
         $pathToFile = storage_path('app/public/' . $mediaFile->file);
