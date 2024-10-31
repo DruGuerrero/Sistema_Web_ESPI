@@ -250,6 +250,7 @@ class AcademicManagementController extends Controller
             // Obtener la imagen del curso desde la tabla media_files
             $mediaFile = MediaFile::where('id_course', $course->id)->first();
             $imageUrl = $mediaFile ? asset('storage/' . $mediaFile->file) : null;
+            Log::info('URL de la imagen: ' . ($imageUrl ?? 'No se encontró la imagen'));
 
             return [
                 'id' => $course->id,
@@ -267,7 +268,6 @@ class AcademicManagementController extends Controller
     {
         $apikey = Config::get('app.moodle_api_key_crear_cursos');
 
-        // Obtener lista de todos los usuarios de Moodle
         $usersResponse = Http::post('https://campusespi.gcproject.net/webservice/rest/server.php?moodlewsrestformat=json&wsfunction=core_user_get_users'
             . '&wstoken=' . urldecode($apikey)
             . '&criteria[0][key]=firstname'
