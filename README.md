@@ -1,3 +1,10 @@
+Para restaurar la base de datos, deberias seguir los siguientes pasos:
+
+1. Configurar tu archivo .env para definir la configuración de la base de datos con datos como la conexión, el host, el puerto, el nombre de la base de datos, el usuario y la contraseña.
+2. Crear la base de datos con el nombre que usaste en la configuración del paso anterior.
+3. Migrar las tablas de la base de datos con el siguiente comando: php artisan migrate
+
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
